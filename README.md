@@ -7,12 +7,6 @@ Video transcoding via [FFmpeg](https://ffmpeg.org/) works out of the box.
 
 ## Usage
 
-### Docker CLI
-
-```bash
-docker run -it -p 3000:8080 -p 3001:8081 --restart=always --name seanime umagistr/seanime
-```
-
 ### Docker Compose
 
 ```yaml
