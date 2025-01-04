@@ -47,7 +47,7 @@ jobs:
 
       - name: Set up Docker Buildx
         if: steps.check_build.outputs.BUILD_NEEDED == 'true'
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
         if: steps.check_build.outputs.BUILD_NEEDED == 'true'
@@ -68,7 +68,7 @@ jobs:
 
       - name: Build and push multiarch Docker image
         if: steps.check_build.outputs.BUILD_NEEDED == 'true'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./.docker/Dockerfile
