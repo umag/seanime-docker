@@ -57,7 +57,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: coyann/seanime
+          images: umagistr/seanime
           tags: |
             type=raw,value=${{ steps.seanime_release.outputs.LATEST_RELEASE }}
             type=raw,value=latest
