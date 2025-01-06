@@ -41,7 +41,7 @@ RUN apk add --no-cache \
     ffmpeg
 
 # Copy the Go-built application from the previous stage
-COPY --from=go-builder /tmp/build/seanime /app/seanime
+COPY --from=go-builder /tmp/build/seanime /app/
 
 # Work in /app directory
 WORKDIR /app
