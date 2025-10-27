@@ -11,6 +11,7 @@ COPY ./seanime-web /tmp/build
 
 WORKDIR /tmp/build
 
+RUN npm install
 RUN npm ci
 RUN npm run build
 
