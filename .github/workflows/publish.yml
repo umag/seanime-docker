@@ -38,7 +38,20 @@ jobs:
             echo "BUILD_NEEDED=false" >> $GITHUB_OUTPUT
             echo "No new version. Skipping build."
           fi
-
+      - uses: jlumbroso/free-disk-space@main
+        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
+        with:
+          # this might remove tools that are actually needed,
+        # if set to "true" but frees about 6 GB
+          tool-cache: true
+        
+        # all of these default to true, but feel free to set to
+        # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true  
       - name: Prepare the repository
         if: steps.check_build.outputs.BUILD_NEEDED == 'true'
         run: |
