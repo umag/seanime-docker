@@ -37,8 +37,8 @@ RUN if [ "$TARGETARCH" = "arm" ] && [ "$TARGETVARIANT" = "v7" ]; then \
 FROM --platform=$TARGETPLATFORM alpine:latest
 
 # Install necessary packages
-RUN apk add --no-cache \
-    ffmpeg
+RUN apk add --no-cache ffmpeg && \
+    apk add --no-cache --repository https://dl-cdn.alpinelinux.org/alpine/v3.18/main ca-certificates=20241121-r1
 
 # Copy the Go-built application from the previous stage
 COPY --from=go-builder /tmp/build/seanime /app/
