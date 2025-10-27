@@ -38,7 +38,11 @@ FROM --platform=$TARGETPLATFORM alpine:latest
 
 # Install necessary packages
 RUN apk add --no-cache \
-    ffmpeg
+    ffmpeg ca-certificates
+
+# Fix missing certificate (#1)
+COPY Comodo_AAA_Services_root.crt /usr/local/share/ca-certificates
+RUN update-ca-certificates
 
 # Copy the Go-built application from the previous stage
 COPY --from=go-builder /tmp/build/seanime /app/
