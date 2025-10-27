@@ -37,8 +37,12 @@ RUN if [ "$TARGETARCH" = "arm" ] && [ "$TARGETVARIANT" = "v7" ]; then \
 FROM --platform=$TARGETPLATFORM alpine:latest
 
 # Install necessary packages
-RUN apk add --no-cache ffmpeg && \
-    apk add --no-cache --repository https://dl-cdn.alpinelinux.org/alpine/v3.18/main ca-certificates=20241121-r1
+RUN apk add --no-cache \
+    ffmpeg ca-certificates
+
+# Fix missing certificate (#1)
+COPY Comodo_AAA_Services_root.crt /usr/local/share/ca-certificates
+RUN update-ca-certificates
 
 # Copy the Go-built application from the previous stage
 COPY --from=go-builder /tmp/build/seanime /app/
