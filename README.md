@@ -4,6 +4,7 @@ A simple, Docker image for [Seanime](https://seanime.rahim.app/).
 
 Video transcoding via [FFmpeg](https://ffmpeg.org/) works out of the box.
 
+arm/v7 support disabled since version 3.0.0 till 5rahim finds workaround
 
 ## Usage
 
@@ -29,11 +30,11 @@ services:
 
 `3211` - Seanime web interface.
 
-
 ### Volumes
 
 `/anime` - Downloads and media files are stored here.
 
-`/seanime-config` - This is where the configuration files for Seanime are located.
+`/seanime-config` - This is where the configuration files for Seanime are
+located.
 
 `downloads` - Torrent downloads dir
