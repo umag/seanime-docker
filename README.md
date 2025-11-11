@@ -4,8 +4,6 @@ A simple, Docker image for [Seanime](https://seanime.rahim.app/).
 
 Video transcoding via [FFmpeg](https://ffmpeg.org/) works out of the box.
 
-arm/v7 support disabled since version 3.0.0 till 5rahim finds workaround
-
 ## Usage
 
 ### Docker Compose
