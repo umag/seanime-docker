@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [seanime_release]
   schedule:
-    - cron: '0 0 * * *'  # Run daily to check for new releases
+    - cron: '0 * * * *'  # Run hourly to check for new releases
 
 jobs:
   check_and_build:
