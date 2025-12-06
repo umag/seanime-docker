@@ -39,9 +39,6 @@ FROM --platform=$BUILDPLATFORM tonistiigi/binfmt:latest AS qemu
 # Stage 4: Final Stage
 FROM --platform=$TARGETPLATFORM alpine:latest
 
-# Copy QEMU for multi-arch support
-ARG TARGETARCH
-COPY --from=qemu /qemu-${TARGETARCH}-static /usr/bin/
 
 # Install necessary packages
 RUN apk add --no-cache \
