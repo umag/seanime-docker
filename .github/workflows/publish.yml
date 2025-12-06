@@ -92,6 +92,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             SEANIME_VERSION=${{ steps.seanime_release.outputs.LATEST_RELEASE }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Update version file
         if: steps.check_build.outputs.BUILD_NEEDED == 'true'
