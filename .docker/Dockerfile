@@ -37,7 +37,7 @@ RUN if [ "$TARGETARCH" = "arm" ] && [ "$TARGETVARIANT" = "v7" ]; then \
 FROM --platform=$BUILDPLATFORM tonistiigi/binfmt:latest AS qemu
 
 # Stage 4: Final Stage
-FROM --platform=$TARGETPLATFORM alpine:latest
+FROM --platform=$TARGETPLATFORM alpine:3.22.2
 
 
 # Install necessary packages
