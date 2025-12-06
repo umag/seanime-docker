@@ -11,7 +11,8 @@ COPY ./seanime-web /tmp/build
 
 WORKDIR /tmp/build
 
-RUN npm install
+RUN --mount=type=cache,target=/root/.npm \
+    npm install
 RUN npm run build
 
 # Stage 2: Go Builder
@@ -26,8 +27,14 @@ COPY --from=node-builder /tmp/build/out /tmp/build/web
 
 WORKDIR /tmp/build
 
+# Download Go modules with cache
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+
 # Handle armv7 (32-bit ARM) builds specifically
-RUN if [ "$TARGETARCH" = "arm" ] && [ "$TARGETVARIANT" = "v7" ]; then \
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    if [ "$TARGETARCH" = "arm" ] && [ "$TARGETVARIANT" = "v7" ]; then \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH GOARM=7 go build -o seanime -trimpath -ldflags="-s -w"; \
     else \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o seanime -trimpath -ldflags="-s -w"; \
