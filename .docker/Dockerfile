@@ -7,12 +7,18 @@ FROM --platform=$BUILDPLATFORM node:latest AS node-builder
 ARG TARGETOS
 ARG TARGETARCH
 
-COPY ./seanime-web /tmp/build
-
 WORKDIR /tmp/build
 
+# Copy only package files first for better caching
+COPY ./seanime-web/package*.json ./
+
+# Install dependencies with cache mount
 RUN --mount=type=cache,target=/root/.npm \
     npm install
+
+# Copy source code after dependencies are installed
+COPY ./seanime-web ./
+
 RUN npm run build
 
 # Stage 2: Go Builder
@@ -22,14 +28,18 @@ ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
 
-COPY . /tmp/build
-COPY --from=node-builder /tmp/build/out /tmp/build/web
-
 WORKDIR /tmp/build
+
+# Copy only go.mod and go.sum first for better caching
+COPY go.mod go.sum ./
 
 # Download Go modules with cache
 RUN --mount=type=cache,target=/go/pkg/mod \
     go mod download
+
+# Copy source code after dependencies are downloaded
+COPY . ./
+COPY --from=node-builder /tmp/build/out /tmp/build/web
 
 # Handle armv7 (32-bit ARM) builds specifically
 RUN --mount=type=cache,target=/go/pkg/mod \
