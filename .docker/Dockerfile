@@ -33,12 +33,21 @@ RUN if [ "$TARGETARCH" = "arm" ] && [ "$TARGETVARIANT" = "v7" ]; then \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o seanime -trimpath -ldflags="-s -w"; \
     fi
 
-# Stage 3: Final Stage
+# Stage 3: QEMU for multi-platform builds
+FROM --platform=$BUILDPLATFORM tonistiigi/binfmt:latest AS qemu
+
+# Stage 4: Final Stage
 FROM --platform=$TARGETPLATFORM alpine:latest
+
+# Copy QEMU for multi-arch support
+COPY --from=qemu /qemu/qemu-aarch64 /usr/bin/qemu-aarch64-static
+COPY --from=qemu /qemu/qemu-arm /usr/bin/qemu-arm-static
+COPY --from=qemu /qemu/qemu-riscv64 /usr/bin/qemu-riscv64-static
 
 # Install necessary packages
 RUN apk add --no-cache \
-    ffmpeg ca-certificates
+    ffmpeg \
+    ca-certificates
 
 # Fix missing certificate (#1)
 COPY Comodo_AAA_Services_root.crt /usr/local/share/ca-certificates
