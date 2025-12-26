@@ -1,3 +1,8 @@
 node_modules
 config
 .next
+**/.git
+**/.gitignore
+**/.gitmodules
+**/.golangci.yml
+**/.github
