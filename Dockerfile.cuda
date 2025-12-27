@@ -63,7 +63,7 @@ RUN apt-get update && \
 # Create user
 RUN groupadd -g 1001 seanime && \
     useradd -u 1001 -g seanime -m -s /bin/bash seanime && \
-    usermod -aG video,render seanime
+    usermod -aG video seanime
 
 # Copy binary with ownership
 COPY --from=go-builder --chown=1000:1000 /tmp/build/seanime /app/seanime
