@@ -164,6 +164,7 @@ jobs:
           images: umagistr/seanime
           tags: |
             type=raw,value=${{ steps.seanime_release.outputs.LATEST_RELEASE }}-cuda
+            type=raw,value=${{ steps.seanime_release.outputs.LATEST_RELEASE }}-cuda-${{ steps.cuda_version.outputs.CUDA_TAG }}
             type=raw,value=latest-cuda
 
       - name: Prepare Dockerfile.cuda
