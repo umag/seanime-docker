@@ -14,6 +14,7 @@ We provide three image variants to suit different needs:
 | **Default**  | `latest`          | `root`           | Standard setup (Alpine + FFmpeg). Backward compatible.  |
 | **Rootless** | `latest-rootless` | `seanime` (1000) | Security-focused, runs as non-root user.                |
 | **HwAccel**  | `latest-hwaccel`  | `seanime` (1000) | Rootless + Jellyfin-FFmpeg + Intel Drivers (QSV/VAAPI). |
+| **CUDA**     | `latest-cuda`     | `seanime` (1000) | Rootless + FFmpeg (NVENC) + NVIDIA CUDA Base.           |
 
 ## Usage
 
@@ -42,6 +43,8 @@ Check the [examples](./examples) directory for complete configurations:
 - **[01-Default](./examples/01-default)**: Standard root-based setup.
 - **[02-Rootless](./examples/02-rootless)**: Secure non-root setup.
 - **[03-HwAccel](./examples/03-hwaccel)**: Hardware acceleration (Intel) setup.
+- **[04-CUDA](./examples/04-hwaccel-cuda)**: Hardware acceleration (NVIDIA CUDA)
+  setup.
 
 ## Configuration
 
@@ -67,6 +70,8 @@ Check the [examples](./examples) directory for complete configurations:
 
 ## Hardware Acceleration
 
+### Intel QSV/VAAPI
+
 To use hardware acceleration (Intel QSV/VAAPI):
 
 1. Use the `latest-hwaccel` tag.
@@ -79,5 +84,23 @@ services:
     image: umagistr/seanime:latest-hwaccel
     devices:
       - /dev/dri:/dev/dri
+    # ... other config
+```
+
+### NVIDIA CUDA (NVENC/NVDEC)
+
+To use NVIDIA hardware acceleration:
+
+1. Use the `latest-cuda` tag.
+2. Ensure NVIDIA drivers and Container Toolkit are installed on the host.
+3. Configure the runtime to `nvidia`.
+
+```yaml
+services:
+  seanime:
+    image: umagistr/seanime:latest-cuda
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
     # ... other config
 ```

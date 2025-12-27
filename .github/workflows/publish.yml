@@ -146,6 +146,41 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # --- CUDA Variant ---
+      - name: Get latest CUDA version
+        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
+        id: cuda_version
+        run: |
+          chmod +x ./scripts/get-cuda-version.sh
+          CUDA_TAG=$(./scripts/get-cuda-version.sh)
+          echo "CUDA_TAG=${CUDA_TAG}" >> $GITHUB_OUTPUT
+          echo "Latest NVIDIA CUDA tag: ${CUDA_TAG}"
+
+      - name: Extract metadata (CUDA)
+        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
+        id: meta_cuda
+        uses: docker/metadata-action@v5
+        with:
+          images: umagistr/seanime
+          tags: |
+            type=raw,value=${{ steps.seanime_release.outputs.LATEST_RELEASE }}-cuda
+            type=raw,value=latest-cuda
+
+      - name: Build and push (CUDA)
+        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile.cuda
+          build-args: |
+            CUDA_VERSION=${{ steps.cuda_version.outputs.CUDA_TAG }}
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta_cuda.outputs.tags }}
+          labels: ${{ steps.meta_cuda.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Update version file
         if: steps.check_build.outputs.BUILD_NEEDED == 'true'
         run: |

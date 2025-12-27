@@ -1,0 +1,25 @@
+services:
+  seanime:
+    image: umagistr/seanime:latest-cuda
+    container_name: seanime
+    # Option 1: Using runtime (recommended)
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all # or '0' for first GPU
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    ports:
+      - "3211:43211"
+    volumes:
+      - ./seanime-config:/home/seanime/.config/Seanime
+      - ./anime:/anime
+      - ./downloads:/downloads
+    restart: unless-stopped
+    
+    # Option 2: Using deploy resources (alternative)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]

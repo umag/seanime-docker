@@ -1,0 +1,76 @@
+# syntax=docker/dockerfile:1.4
+
+# Stage 1: Node.js Builder
+FROM --platform=$BUILDPLATFORM node:latest AS node-builder
+
+# Set build args for cross-platform compatibility
+ARG TARGETOS
+ARG TARGETARCH
+
+WORKDIR /tmp/build
+
+# Copy only package files first for better caching
+COPY ./seanime-web/package*.json ./
+
+# Install dependencies with cache mount
+RUN --mount=type=cache,target=/root/.npm \
+    npm install
+
+# Copy source code after dependencies are installed
+COPY ./seanime-web ./
+
+RUN npm run build
+
+# Stage 2: Go Builder
+FROM --platform=$BUILDPLATFORM golang:latest AS go-builder
+
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
+
+WORKDIR /tmp/build
+
+# Copy only go.mod and go.sum first for better caching
+COPY go.mod go.sum ./
+
+# Download Go modules with cache
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+
+# Copy source code after dependencies are downloaded
+COPY . ./
+COPY --from=node-builder /tmp/build/out /tmp/build/web
+
+# Build
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o seanime -trimpath -ldflags="-s -w"
+
+# Stage 3: CUDA Base
+ARG CUDA_VERSION
+FROM nvidia/cuda:${CUDA_VERSION}
+
+# Install dependencies
+# We install ffmpeg from Ubuntu repositories as modern versions often include NVENC support
+# If specific jellyfin-ffmpeg is needed, it can be added here
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    tzdata \
+    ffmpeg \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create user
+RUN groupadd -g 1000 seanime && \
+    useradd -u 1000 -g seanime -m -s /bin/bash seanime && \
+    usermod -aG video,render seanime
+
+# Copy binary with ownership
+COPY --from=go-builder --chown=1000:1000 /tmp/build/seanime /app/seanime
+
+USER 1000
+WORKDIR /app
+EXPOSE 43211
+
+CMD ["/app/seanime"]
