@@ -2,9 +2,6 @@ services:
   seanime:
     image: umagistr/seanime:latest-hwaccel
     container_name: seanime
-    environment:
-      - SEANIME_SERVER_HOST=0.0.0.0
-      - SEANIME_SERVER_PORT=43211
     devices:
       - /dev/dri:/dev/dri
     ports:
