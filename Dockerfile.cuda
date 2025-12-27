@@ -61,14 +61,14 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Create user
-RUN groupadd -g 1000 seanime && \
-    useradd -u 1000 -g seanime -m -s /bin/bash seanime && \
+RUN groupadd -g 1001 seanime && \
+    useradd -u 1001 -g seanime -m -s /bin/bash seanime && \
     usermod -aG video,render seanime
 
 # Copy binary with ownership
 COPY --from=go-builder --chown=1000:1000 /tmp/build/seanime /app/seanime
 
-USER 1000
+USER 1001
 WORKDIR /app
 EXPOSE 43211
 

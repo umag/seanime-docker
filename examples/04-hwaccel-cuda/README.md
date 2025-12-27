@@ -17,7 +17,7 @@ It uses the NVIDIA CUDA base image and includes FFmpeg with NVENC support.
 2. Ensure your host directories have the correct permissions (writable by UID
    1000).
    ```bash
-   sudo chown -R 1000:1000 ./seanime-config
+   sudo chown -R 1001:1001 ./seanime-config
    ```
 3. Run `docker-compose up -d`.
 
