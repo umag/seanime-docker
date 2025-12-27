@@ -107,8 +107,8 @@ RUN sed -i -e 's/^#\s*\(.*\/\)community/\1community/' /etc/apk/repositories && \
     PACKAGES="$PACKAGES intel-media-driver libva-intel-driver"; \
     fi && \
     apk add --no-cache --repository=https://repo.jellyfin.org/releases/alpine/ $PACKAGES && \
-    ln -s /usr/bin/jellyfin-ffmpeg /usr/bin/ffmpeg && \
-    ln -s /usr/bin/jellyfin-ffprobe /usr/bin/ffprobe
+    ln -s /usr/lib/jellyfin-ffmpeg /usr/bin/ffmpeg && \
+    ln -s /usr/lib/jellyfin-ffprobe /usr/bin/ffprobe
 
 # Copy binary with ownership
 COPY --from=go-builder --chown=1000:1000 /tmp/build/seanime /app/seanime
