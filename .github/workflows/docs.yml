@@ -1,0 +1,42 @@
+name: Update Docker Hub Docs
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "README.md"
+      - ".github/workflows/docs.yml"
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare Docker README
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_BRANCH: ${{ github.ref_name }}
+          GH_SERVER: ${{ github.server_url }}
+        run: |
+          REPO_URL="$GH_SERVER/$GH_REPO/tree/$GH_BRANCH"
+          IMG_URL="$GH_SERVER/$GH_REPO/raw/$GH_BRANCH"
+
+          echo "Resolving links for repo: $GH_REPO on branch: $GH_BRANCH"
+
+          cp README.md README_DOCKER.md
+
+          sed -i "s|\](examples/|\]($REPO_URL/examples/|g" README_DOCKER.md
+          sed -i "s|\](\./|\]($IMG_URL/|g" README_DOCKER.md
+          sed -i "s|src=\"\./|src=\"$IMG_URL/|g" README_DOCKER.md
+
+      - name: Update Docker Hub Description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: ju1js/seanime
+          short-description: ${{ github.event.repository.description }}
+          readme-filepath: ./README_DOCKER.md
+          
