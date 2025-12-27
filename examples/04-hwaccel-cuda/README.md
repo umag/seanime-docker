@@ -15,7 +15,7 @@ It uses the NVIDIA CUDA base image and includes FFmpeg with NVENC support.
 1. Create a `docker-compose.yml` file with the content provided in this
    directory.
 2. Ensure your host directories have the correct permissions (writable by UID
-   1000).
+   1001).
    ```bash
    sudo chown -R 1001:1001 ./seanime-config
    ```
@@ -24,7 +24,7 @@ It uses the NVIDIA CUDA base image and includes FFmpeg with NVENC support.
 ## Configuration
 
 - **Config Path**: `/home/seanime/.config/Seanime`
-- **User**: Runs as `seanime` (UID 1000) inside the container.
+- **User**: Runs as `seanime` (UID 1001) inside the container.
 - **Image**: `umagistr/seanime:latest-cuda`
 - **GPU Access**: Configured via `runtime: nvidia` and environment variables.
 

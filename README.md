@@ -9,12 +9,12 @@ A simple, multi-arch Docker image for [Seanime](https://seanime.rahim.app/).
 
 We provide three image variants to suit different needs:
 
-| Variant      | Tag               | User             | Description                                             |
-| ------------ | ----------------- | ---------------- | ------------------------------------------------------- |
-| **Default**  | `latest`          | `root`           | Standard setup (Alpine + FFmpeg). Backward compatible.  |
-| **Rootless** | `latest-rootless` | `seanime` (1000) | Security-focused, runs as non-root user.                |
-| **HwAccel**  | `latest-hwaccel`  | `seanime` (1000) | Rootless + Jellyfin-FFmpeg + Intel Drivers (QSV/VAAPI). |
-| **CUDA**     | `latest-cuda`     | `seanime` (1000) | Rootless + FFmpeg (NVENC) + NVIDIA CUDA Base.           |
+| Variant      | Tag               | User                | Description                                             |
+| ------------ | ----------------- | ------------------- | ------------------------------------------------------- |
+| **Default**  | `latest`          | `root`              | Standard setup (Alpine + FFmpeg). Backward compatible.  |
+| **Rootless** | `latest-rootless` | `seanime` (1000)    | Security-focused, runs as non-root user.                |
+| **HwAccel**  | `latest-hwaccel`  | `seanime` (1000)    | Rootless + Jellyfin-FFmpeg + Intel Drivers (QSV/VAAPI). |
+| **CUDA**     | `latest-cuda`     | `seanime` (1001!!!) | Rootless + FFmpeg (NVENC) + NVIDIA CUDA Base.           |
 
 ## Usage
 
