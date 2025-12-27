@@ -166,14 +166,18 @@ jobs:
             type=raw,value=${{ steps.seanime_release.outputs.LATEST_RELEASE }}-cuda
             type=raw,value=latest-cuda
 
+      - name: Prepare Dockerfile.cuda
+        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
+        run: |
+          sed -i "s/CUDA_VERSION_PLACEHOLDER/${{ steps.cuda_version.outputs.CUDA_TAG }}/g" Dockerfile.cuda
+          echo "Updated Dockerfile.cuda with version ${{ steps.cuda_version.outputs.CUDA_TAG }}"
+
       - name: Build and push (CUDA)
         if: steps.check_build.outputs.BUILD_NEEDED == 'true'
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile.cuda
-          build-args: |
-            CUDA_VERSION=${{ steps.cuda_version.outputs.CUDA_TAG }}
           push: true
           platforms: linux/amd64
           tags: ${{ steps.meta_cuda.outputs.tags }}

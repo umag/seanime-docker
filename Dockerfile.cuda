@@ -47,8 +47,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o seanime -trimpath -ldflags="-s -w"
 
 # Stage 3: CUDA Base
-ARG CUDA_VERSION
-FROM nvidia/cuda:${CUDA_VERSION}
+FROM nvidia/cuda:CUDA_VERSION_PLACEHOLDER
 
 # Install dependencies
 # We install ffmpeg from Ubuntu repositories as modern versions often include NVENC support
