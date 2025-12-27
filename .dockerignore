@@ -1,0 +1,36 @@
+# Version control
+.git
+.github
+.gitignore
+.version
+.vscode
+.idea
+
+# Documentation and examples
+examples
+scripts
+docs
+test
+README.md
+
+# Build artifacts and dependencies
+node_modules
+dist
+out
+build
+bin
+obj
+.next
+
+# Environment and config
+config
+.env*
+.dockerignore
+docker-compose.yml
+Dockerfile
+
+**/.git
+**/.gitignore
+**/.gitmodules
+**/.golangci.yml
+**/.github

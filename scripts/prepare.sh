@@ -13,4 +13,3 @@ cd ..
 
 # Move the files to the root of the project
 mv seanime/* .
-cp .docker/.dockerignore .

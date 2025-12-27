@@ -1,0 +1,14 @@
+services:
+  seanime:
+    image: umagistr/seanime:latest-rootless
+    container_name: seanime
+    environment:
+      - SEANIME_SERVER_HOST=0.0.0.0
+      - SEANIME_SERVER_PORT=43211
+    ports:
+      - "3211:43211"
+    volumes:
+      - ./seanime-config:/home/seanime/.config/Seanime
+      - ./anime:/anime
+      - ./downloads:/downloads
+    restart: unless-stopped

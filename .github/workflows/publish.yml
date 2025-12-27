@@ -38,26 +38,27 @@ jobs:
             echo "BUILD_NEEDED=false" >> $GITHUB_OUTPUT
             echo "No new version. Skipping build."
           fi
+          
       - uses: jlumbroso/free-disk-space@main
         if: steps.check_build.outputs.BUILD_NEEDED == 'true'
         with:
-          # this might remove tools that are actually needed,
-        # if set to "true" but frees about 6 GB
           tool-cache: true
-        
-        # all of these default to true, but feel free to set to
-        # "false" if necessary for your workflow
           android: true
           dotnet: true
           haskell: true
           large-packages: true
           swap-storage: true  
+
       - name: Prepare the repository
         if: steps.check_build.outputs.BUILD_NEEDED == 'true'
         run: |
-          chmod +x ./.docker/prepare.sh
-          ./.docker/prepare.sh ${{ steps.seanime_release.outputs.LATEST_RELEASE }}
+          chmod +x ./scripts/prepare.sh
+          ./scripts/prepare.sh ${{ steps.seanime_release.outputs.LATEST_RELEASE }}
         shell: bash
+
+      - name: Set up QEMU
+        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         if: steps.check_build.outputs.BUILD_NEEDED == 'true'
@@ -70,9 +71,10 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Extract metadata (tags, labels) for Docker
+      # --- Default Variant ---
+      - name: Extract metadata (Default)
         if: steps.check_build.outputs.BUILD_NEEDED == 'true'
-        id: meta
+        id: meta_default
         uses: docker/metadata-action@v5
         with:
           images: umagistr/seanime
@@ -80,18 +82,67 @@ jobs:
             type=raw,value=${{ steps.seanime_release.outputs.LATEST_RELEASE }}
             type=raw,value=latest
 
-      - name: Build and push multiarch Docker image
+      - name: Build and push (Default)
         if: steps.check_build.outputs.BUILD_NEEDED == 'true'
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./.docker/Dockerfile
+          file: ./Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64,linux/arm/v7
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            SEANIME_VERSION=${{ steps.seanime_release.outputs.LATEST_RELEASE }}
+          target: base
+          tags: ${{ steps.meta_default.outputs.tags }}
+          labels: ${{ steps.meta_default.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # --- Rootless Variant ---
+      - name: Extract metadata (Rootless)
+        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
+        id: meta_rootless
+        uses: docker/metadata-action@v5
+        with:
+          images: umagistr/seanime
+          tags: |
+            type=raw,value=${{ steps.seanime_release.outputs.LATEST_RELEASE }}-rootless
+            type=raw,value=latest-rootless
+
+      - name: Build and push (Rootless)
+        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          target: rootless
+          tags: ${{ steps.meta_rootless.outputs.tags }}
+          labels: ${{ steps.meta_rootless.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # --- Hardware Acceleration Variant ---
+      - name: Extract metadata (HwAccel)
+        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
+        id: meta_hwaccel
+        uses: docker/metadata-action@v5
+        with:
+          images: umagistr/seanime
+          tags: |
+            type=raw,value=${{ steps.seanime_release.outputs.LATEST_RELEASE }}-hwaccel
+            type=raw,value=latest-hwaccel
+
+      - name: Build and push (HwAccel)
+        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          target: hwaccel
+          tags: ${{ steps.meta_hwaccel.outputs.tags }}
+          labels: ${{ steps.meta_hwaccel.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
