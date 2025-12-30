@@ -3,13 +3,31 @@
 set -e
 cd "$(dirname "$0")"/../
 
-# Clone the latest version of Seanime
-git clone https://github.com/5rahim/seanime.git
+TAG=$1
 
-# Checkout the specified release tag
-cd seanime
-git checkout $1
-cd ..
+if [ -z "$TAG" ]; then
+    echo "Usage: $0 <tag|branch|commit>"
+    exit 1
+fi
 
-# Move the files to the root of the project
-mv seanime/* .
+# Check if seanime directory exists
+if [ -d "seanime" ]; then
+    echo "Seanime directory exists, updating..."
+    cd seanime
+    git fetch origin
+    git checkout "$TAG"
+    if git show-ref --verify --quiet "refs/heads/$TAG"; then
+        git pull origin "$TAG"
+    fi
+    cd ..
+else
+    echo "Cloning Seanime..."
+    git clone https://github.com/5rahim/seanime.git
+    cd seanime
+    git checkout "$TAG"
+    cd ..
+fi
+
+# Copy the files to the root of the project (excluding .git and Dockerfile if present)
+echo "Copying files to root..."
+rsync -av --exclude='.git' --exclude='Dockerfile' seanime/ .

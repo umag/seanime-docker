@@ -13,21 +13,26 @@ check_command() {
 check_command curl
 check_command jq
 check_command docker
+check_command rsync
 
-# Get latest release tag if not provided
+# Handle arguments
 if [ -z "$1" ]; then
     echo "Fetching latest release tag from 5rahim/seanime..."
     LATEST_RELEASE=$(curl -s https://api.github.com/repos/5rahim/seanime/releases/latest | jq -r .tag_name)
     echo "Latest release: $LATEST_RELEASE"
+    TAG="$LATEST_RELEASE"
+elif [ "$1" == "latest" ] || [ "$1" == "main" ]; then
+    echo "Using main branch..."
+    TAG="main"
 else
-    LATEST_RELEASE="$1"
-    echo "Using provided release: $LATEST_RELEASE"
+    TAG="$1"
+    echo "Using provided ref: $TAG"
 fi
 
 # Run prepare script
-echo "Running prepare script..."
+echo "Running prepare script with $TAG..."
 chmod +x ./scripts/prepare.sh
-./scripts/prepare.sh "$LATEST_RELEASE"
+./scripts/prepare.sh "$TAG"
 
 # Build Default image
 echo "Building Default image..."

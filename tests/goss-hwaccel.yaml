@@ -22,12 +22,30 @@ user:
     gid: 1000
     groups:
       - seanime
-      - video
     shell: /sbin/nologin
 
 group:
   seanime:
     exists: true
     gid: 1000
-  video:
+
+package:
+  jellyfin-ffmpeg:
+    installed: true
+
+file:
+  /usr/bin/ffmpeg:
     exists: true
+    filetype: symlink
+    linked-to: /usr/lib/jellyfin-ffmpeg/ffmpeg
+  /usr/bin/ffprobe:
+    exists: true
+    filetype: symlink
+    linked-to: /usr/lib/jellyfin-ffmpeg/ffprobe
+
+command:
+  ffmpeg:
+    exec: ffmpeg -version
+    exit-status: 0
+    stdout:
+      - "ffmpeg version"

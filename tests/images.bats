@@ -1,11 +1,16 @@
 #!/usr/bin/env bats
 
 setup_file() {
+    echo "=== Setting up test environment ===" >&3
+    
     # Define project root
     export PROJECT_ROOT="$(git rev-parse --show-toplevel)"
     export SCRIPT_DIR="$PROJECT_ROOT/scripts"
+    echo "Project root: $PROJECT_ROOT" >&3
+    echo "Script directory: $SCRIPT_DIR" >&3
     
     # Ensure Goss binary is available
+    echo "Ensuring Goss binary is available..." >&3
     if ! "$SCRIPT_DIR/ensure-goss.sh"; then
         echo "Failed to setup Goss" >&2
         return 1
@@ -14,13 +19,8 @@ setup_file() {
     # Get the binary path (it's printed by the script)
     export GOSS_PATH="$("$SCRIPT_DIR/ensure-goss.sh")"
     export DGOSS="$SCRIPT_DIR/dgoss"
-    
-    # Pull images
-    echo "Pulling images..." >&3
-    docker pull umagistr/seanime:latest
-    docker pull umagistr/seanime:latest-rootless
-    docker pull umagistr/seanime:latest-hwaccel
-    docker pull umagistr/seanime:latest-cuda
+    echo "Goss path: $GOSS_PATH" >&3
+    echo "dgoss path: $DGOSS" >&3
 }
 
 setup() {
@@ -39,45 +39,145 @@ setup() {
 }
 
 @test "latest: structure tests" {
+    echo "Running structure tests for umagistr/seanime:latest"
+    echo "Config: $PROJECT_ROOT/tests/structure-tests.yaml"
+    
     run container-structure-test test --image umagistr/seanime:latest --config "$PROJECT_ROOT/tests/structure-tests.yaml"
+    
+    if [ "$status" -ne 0 ]; then
+        echo "FAILED: Structure tests failed with status $status"
+        echo "Output:"
+        echo "$output"
+    else
+        echo "PASSED: Structure tests successful"
+    fi
+    
     [ "$status" -eq 0 ]
 }
 
 @test "latest: goss tests" {
     export GOSS_FILE="goss-default.yaml"
+    echo "Running Goss tests for umagistr/seanime:latest"
+    echo "Goss file: $GOSS_FILE"
+    echo "Command: $DGOSS run umagistr/seanime:latest"
+    
     run "$DGOSS" run umagistr/seanime:latest
+    
+    if [ "$status" -ne 0 ]; then
+        echo "FAILED: Goss tests failed with status $status"
+        echo "Output:"
+        echo "$output"
+    else
+        echo "PASSED: Goss tests successful"
+    fi
+    
     [ "$status" -eq 0 ]
 }
 
 @test "latest-rootless: structure tests" {
+    echo "Running structure tests for umagistr/seanime:latest-rootless"
+    echo "Config: $PROJECT_ROOT/tests/structure-tests.yaml"
+    
     run container-structure-test test --image umagistr/seanime:latest-rootless --config "$PROJECT_ROOT/tests/structure-tests.yaml"
+    
+    if [ "$status" -ne 0 ]; then
+        echo "FAILED: Structure tests failed with status $status"
+        echo "Output:"
+        echo "$output"
+    else
+        echo "PASSED: Structure tests successful"
+    fi
+    
     [ "$status" -eq 0 ]
 }
 
 @test "latest-rootless: goss tests" {
     export GOSS_FILE="goss-rootless.yaml"
+    echo "Running Goss tests for umagistr/seanime:latest-rootless"
+    echo "Goss file: $GOSS_FILE"
+    echo "Command: $DGOSS run umagistr/seanime:latest-rootless"
+    
     run "$DGOSS" run umagistr/seanime:latest-rootless
+    
+    if [ "$status" -ne 0 ]; then
+        echo "FAILED: Goss tests failed with status $status"
+        echo "Output:"
+        echo "$output"
+    else
+        echo "PASSED: Goss tests successful"
+    fi
+    
     [ "$status" -eq 0 ]
 }
 
 @test "latest-hwaccel: structure tests" {
+    echo "Running structure tests for umagistr/seanime:latest-hwaccel"
+    echo "Config: $PROJECT_ROOT/tests/structure-tests.yaml"
+    
     run container-structure-test test --image umagistr/seanime:latest-hwaccel --config "$PROJECT_ROOT/tests/structure-tests.yaml"
+    
+    if [ "$status" -ne 0 ]; then
+        echo "FAILED: Structure tests failed with status $status"
+        echo "Output:"
+        echo "$output"
+    else
+        echo "PASSED: Structure tests successful"
+    fi
+    
     [ "$status" -eq 0 ]
 }
 
 @test "latest-hwaccel: goss tests" {
     export GOSS_FILE="goss-hwaccel.yaml"
+    echo "Running Goss tests for umagistr/seanime:latest-hwaccel"
+    echo "Goss file: $GOSS_FILE"
+    echo "Command: $DGOSS run umagistr/seanime:latest-hwaccel"
+    
     run "$DGOSS" run umagistr/seanime:latest-hwaccel
+    
+    if [ "$status" -ne 0 ]; then
+        echo "FAILED: Goss tests failed with status $status"
+        echo "Output:"
+        echo "$output"
+    else
+        echo "PASSED: Goss tests successful"
+    fi
+    
     [ "$status" -eq 0 ]
 }
 
 @test "latest-cuda: structure tests" {
+    echo "Running structure tests for umagistr/seanime:latest-cuda"
+    echo "Config: $PROJECT_ROOT/tests/structure-tests.yaml"
+    
     run container-structure-test test --image umagistr/seanime:latest-cuda --config "$PROJECT_ROOT/tests/structure-tests.yaml"
+    
+    if [ "$status" -ne 0 ]; then
+        echo "FAILED: Structure tests failed with status $status"
+        echo "Output:"
+        echo "$output"
+    else
+        echo "PASSED: Structure tests successful"
+    fi
+    
     [ "$status" -eq 0 ]
 }
 
 @test "latest-cuda: goss tests" {
     export GOSS_FILE="goss-cuda.yaml"
+    echo "Running Goss tests for umagistr/seanime:latest-cuda"
+    echo "Goss file: $GOSS_FILE"
+    echo "Command: $DGOSS run umagistr/seanime:latest-cuda"
+    
     run "$DGOSS" run umagistr/seanime:latest-cuda
+    
+    if [ "$status" -ne 0 ]; then
+        echo "FAILED: Goss tests failed with status $status"
+        echo "Output:"
+        echo "$output"
+    else
+        echo "PASSED: Goss tests successful"
+    fi
+    
     [ "$status" -eq 0 ]
 }

@@ -99,10 +99,9 @@ CMD ["/app/seanime"]
 FROM common-base AS hwaccel
 ARG TARGETARCH
 
-# Create user and add to video groups
+# Create user and add to group
 RUN addgroup -S seanime -g 1000 && \
-    adduser -S seanime -G seanime -u 1000 && \
-    addgroup seanime video || true && \
+    adduser -S seanime -G seanime -u 1000
 
 # Install Jellyfin FFmpeg and Intel drivers (amd64 only)
 RUN sed -i -e 's/^#\s*\(.*\/\)community/\1community/' /etc/apk/repositories && \
@@ -112,8 +111,9 @@ RUN sed -i -e 's/^#\s*\(.*\/\)community/\1community/' /etc/apk/repositories && \
     PACKAGES="$PACKAGES intel-media-driver libva-intel-driver"; \
     fi && \
     apk add --no-cache --repository=https://repo.jellyfin.org/releases/alpine/ $PACKAGES && \
-    ln -s /usr/lib/jellyfin-ffmpeg /usr/bin/ffmpeg && \
-    ln -s /usr/lib/jellyfin-ffprobe /usr/bin/ffprobe
+    chmod +x /usr/lib/jellyfin-ffmpeg/ffmpeg /usr/lib/jellyfin-ffmpeg/ffprobe && \
+    ln -s /usr/lib/jellyfin-ffmpeg/ffmpeg /usr/bin/ffmpeg && \
+    ln -s /usr/lib/jellyfin-ffmpeg/ffprobe /usr/bin/ffprobe
 
 # Copy binary with ownership
 COPY --from=go-builder --chown=1000:1000 /tmp/build/seanime /app/
