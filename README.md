@@ -104,3 +104,54 @@ services:
       - NVIDIA_VISIBLE_DEVICES=all
     # ... other config
 ```
+
+## Development & Testing
+
+This project uses [Nix](https://nixos.org/) and [direnv](https://direnv.net/) to
+manage development dependencies.
+
+### Setup
+
+1. Install **Nix** and **direnv**.
+2. Run `direnv allow` in the project root.
+3. This will install:
+   - `container-structure-test`
+   - `goss` / `dgoss`
+   - `bats`
+   - `hadolint`
+
+### Running Tests
+
+#### 1. Container Structure Tests (Static)
+
+Verify the image content:
+
+```bash
+container-structure-test test --image umagistr/seanime:latest --config tests/structure-tests.yaml
+```
+
+#### 2. Goss Tests (Runtime)
+
+Verify the running container state:
+
+```bash
+# Requires dgoss wrapper or similar
+dgoss run umagistr/seanime:latest
+```
+
+_Note: You might need to set `GOSS_FILE=tests/goss.yaml` depending on how you
+invoke it._
+
+For the **CUDA** variant, use the specific configuration:
+
+```bash
+GOSS_FILE=tests/goss-cuda.yaml dgoss run umagistr/seanime:latest-cuda
+```
+
+#### 3. BATS (Integration)
+
+Verify Docker Compose examples:
+
+```bash
+bats tests/compose.bats
+```

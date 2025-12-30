@@ -1,0 +1,47 @@
+# Inherit/Include common checks would be nice, but for simplicity/portability we define the full spec for the CUDA variant.
+
+port:
+  tcp:43211:
+    listening: true
+    ip:
+      - 0.0.0.0
+
+process:
+  seanime:
+    running: true
+
+http:
+  http://localhost:43211:
+    status: 200
+    timeout: 5000
+    allow-insecure: true
+    no-follow-redirects: false
+
+file:
+  /usr/bin/ffmpeg:
+    exists: true
+    mode: "0755"
+    owner: root
+    group: root
+    filetype: file
+
+  /app/seanime:
+    exists: true
+    owner: seanime
+    group: seanime
+    filetype: file
+
+user:
+  seanime:
+    exists: true
+    uid: 1001
+    gid: 1001
+    groups:
+      - seanime
+      - video
+    shell: /bin/bash
+
+group:
+  seanime:
+    exists: true
+    gid: 1001

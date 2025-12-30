@@ -1,0 +1,35 @@
+schemaVersion: "2.0.0"
+
+# Metadata Verification
+metadataTest:
+  exposedPorts: ["43211"]
+  entrypoint: ["/app/seanime"]
+  workdir: "/app"
+  # User differs between variants (root vs 1000 vs 1001), so checking user might require per-variant configs.
+  # For now we skip specific user check or assume a specific variant.
+  # Let's keep it generic for the common parts.
+
+# File Existence Verification
+fileExistenceTests:
+  - name: "Seanime binary"
+    path: "/app/seanime"
+    shouldExist: true
+    permissions: "-rwxr-xr-x"
+
+  - name: "FFmpeg"
+    path: "/usr/bin/ffmpeg"
+    shouldExist: true
+    isExecutableBy: "owner"
+
+# Command Verification
+commandTests:
+  - name: "FFmpeg version"
+    command: "ffmpeg"
+    args: ["-version"]
+    expectedOutput: ["ffmpeg version"]
+
+  - name: "Seanime help"
+    command: "/app/seanime"
+    args: ["--help"]
+    # Expecting exit code 0 or some help text.
+    # Since we don't know exact output, just ensuring it runs without segfault.

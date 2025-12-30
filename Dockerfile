@@ -54,7 +54,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 FROM --platform=$TARGETPLATFORM alpine:latest AS common-base
 
 # Install common dependencies
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk add --no-cache ca-certificates tzdata curl
 
 # Stage 4: Default (Root) Variant
 FROM common-base AS base
@@ -67,6 +67,9 @@ COPY --from=go-builder /tmp/build/seanime /app/
 
 WORKDIR /app
 EXPOSE 43211
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:43211 || exit 1
 
 CMD ["/app/seanime"]
 
@@ -86,6 +89,9 @@ COPY --from=go-builder --chown=1000:1000 /tmp/build/seanime /app/
 USER 1000
 WORKDIR /app
 EXPOSE 43211
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:43211 || exit 1
 
 CMD ["/app/seanime"]
 
@@ -116,5 +122,8 @@ COPY --from=go-builder --chown=1000:1000 /tmp/build/seanime /app/
 USER 1000
 WORKDIR /app
 EXPOSE 43211
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:43211 || exit 1
 
 CMD ["/app/seanime"]

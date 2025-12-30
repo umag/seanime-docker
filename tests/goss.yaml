@@ -1,0 +1,23 @@
+port:
+  tcp:43211:
+    listening: true
+    ip:
+      - 0.0.0.0
+
+process:
+  seanime:
+    running: true
+
+http:
+  http://localhost:43211:
+    status: 200
+    timeout: 5000
+    # Allow redirects/auth required as success indicators for connectivity
+    allow-insecure: true
+    no-follow-redirects: false
+
+# Verify user and group (optional, can be strict)
+# user:
+#   seanime:
+#     exists: true
+#     uid: 1000 # Warning: rootless vs cuda variants differ
