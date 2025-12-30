@@ -28,3 +28,21 @@ group:
   seanime:
     exists: true
     gid: 1000
+
+file:
+  /app/seanime:
+    exists: true
+    owner: seanime
+    group: seanime
+    filetype: file
+
+package:
+  ffmpeg:
+    installed: true
+
+command:
+  ffmpeg:
+    exec: ffmpeg -version
+    exit-status: 0
+    stdout:
+      - "ffmpeg version"

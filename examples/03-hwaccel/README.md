@@ -17,7 +17,13 @@ uses the rootless variant as a base.
    ```bash
    sudo chown -R 1000:1000 ./seanime-config
    ```
-3. Run `docker-compose up -d`.
+3. Ensure your user is in the `video` and `render` groups on the host (if they
+   exist):
+   ```bash
+   sudo usermod -aG video,render $(whoami)
+   # Log out and back in, or reboot for changes to take effect
+   ```
+4. Run `docker-compose up -d`.
 
 ## Configuration
 
@@ -25,6 +31,8 @@ uses the rootless variant as a base.
 - **User**: Runs as `seanime` (UID 1000) inside the container.
 - **Image**: `umagistr/seanime:latest-hwaccel`
 - **Devices**: Passes `/dev/dri` to the container.
+- **Groups**: Container user added to host `video` and `render` groups for GPU
+  access.
 
 ## Important
 

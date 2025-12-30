@@ -32,8 +32,18 @@ group:
 package:
   jellyfin-ffmpeg:
     installed: true
+  mesa-va-gallium:
+    installed: true
+  # opencl-icd-loader is optional - may not be available in all environments
+  # opencl-icd-loader:
+  #   installed: true
 
 file:
+  /app/seanime:
+    exists: true
+    owner: seanime
+    group: seanime
+    filetype: file
   /usr/bin/ffmpeg:
     exists: true
     filetype: symlink
@@ -42,6 +52,12 @@ file:
     exists: true
     filetype: symlink
     linked-to: /usr/lib/jellyfin-ffmpeg/ffprobe
+  /usr/lib/jellyfin-ffmpeg/ffmpeg:
+    exists: true
+    mode: "0755"
+  /usr/lib/jellyfin-ffmpeg/ffprobe:
+    exists: true
+    mode: "0755"
 
 command:
   ffmpeg:
@@ -49,3 +65,8 @@ command:
     exit-status: 0
     stdout:
       - "ffmpeg version"
+  ffmpeg-hwaccels:
+    exec: ffmpeg -hwaccels
+    exit-status: 0
+    stdout:
+      - "vaapi"

@@ -3,6 +3,7 @@
 setup() {
     # Define project root
     PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+    echo "# Project root: $PROJECT_ROOT" >&3
 }
 
 wait_for_health() {
@@ -10,61 +11,162 @@ wait_for_health() {
     local max_retries=60
     local retry=0
 
-    echo "Waiting for $service_name to be healthy..."
+    echo "# [HEALTH CHECK] Waiting for $service_name to be healthy..." >&3
     while [ $retry -lt $max_retries ]; do
         local health_status
         health_status=$(docker inspect --format='{{.State.Health.Status}}' "$service_name" 2>/dev/null || echo "not_found")
         
         if [ "$health_status" == "healthy" ]; then
-            echo "$service_name is healthy!"
+            echo "# [HEALTH CHECK] ✓ $service_name is healthy!" >&3
             return 0
         fi
 
-        echo "Retry $retry/$max_retries: Status is $health_status"
+        echo "# [HEALTH CHECK] Retry $retry/$max_retries: Status is $health_status" >&3
         retry=$((retry + 1))
         sleep 2
     done
 
-    echo "Timed out waiting for $service_name"
-    docker logs "$service_name"
+    echo "# [HEALTH CHECK] ✗ Timed out waiting for $service_name" >&3
+    echo "# [LOGS] Container logs:" >&3
+    docker logs "$service_name" >&3 2>&1
     return 1
 }
 
 @test "01-default: docker compose up and verify health" {
+    echo "# ========================================" >&3
+    echo "# TEST: 01-default (Root variant)" >&3
+    echo "# ========================================" >&3
+    
     cd "$PROJECT_ROOT/examples/01-default"
+    echo "# Working directory: $(pwd)" >&3
     
     # Clean up any potential leftovers
+    echo "# Cleaning up existing containers..." >&3
     docker compose down || true
 
     # Start
+    echo "# Starting docker compose..." >&3
     docker compose up -d
-
-    # Get container name (assuming standard naming or using compose ps)
-    # The default example creates a container named "seanime" due to `container_name: seanime` usually?
-    # Checking the file `examples/01-default/docker-compose.yml` content would verify this, but let's assume standard compose naming if not.
-    # Actually, let's use `docker compose ps -q` to get the ID.
+    
+    echo "# Listing running containers:" >&3
+    docker compose ps >&3
     
     CONTAINER_ID=$(docker compose ps -q seanime)
+    echo "# Container ID: $CONTAINER_ID" >&3
     [ -n "$CONTAINER_ID" ]
+
+    echo "# Inspecting container configuration:" >&3
+    docker inspect --format='User: {{.Config.User}}' "$CONTAINER_ID" >&3
+    docker inspect --format='Image: {{.Config.Image}}' "$CONTAINER_ID" >&3
 
     run wait_for_health "$CONTAINER_ID"
     [ "$status" -eq 0 ]
     
     # Teardown
+    echo "# Tearing down..." >&3
     docker compose down
+    echo "# ✓ Test completed successfully" >&3
 }
 
 @test "02-rootless: docker compose up and verify health" {
-    cd "$PROJECT_ROOT/examples/02-rootless"
+    echo "# ========================================" >&3
+    echo "# TEST: 02-rootless (Rootless variant)" >&3
+    echo "# ========================================" >&3
     
+    cd "$PROJECT_ROOT/examples/02-rootless"
+    echo "# Working directory: $(pwd)" >&3
+    
+    echo "# Cleaning up existing containers..." >&3
     docker compose down || true
+    
+    echo "# Starting docker compose..." >&3
     docker compose up -d
+    
+    echo "# Listing running containers:" >&3
+    docker compose ps >&3
 
     CONTAINER_ID=$(docker compose ps -q seanime)
+    echo "# Container ID: $CONTAINER_ID" >&3
     [ -n "$CONTAINER_ID" ]
+
+    echo "# Inspecting container configuration:" >&3
+    docker inspect --format='User: {{.Config.User}}' "$CONTAINER_ID" >&3
+    docker inspect --format='Image: {{.Config.Image}}' "$CONTAINER_ID" >&3
 
     run wait_for_health "$CONTAINER_ID"
     [ "$status" -eq 0 ]
     
+    echo "# Tearing down..." >&3
     docker compose down
+    echo "# ✓ Test completed successfully" >&3
+}
+
+@test "03-hwaccel: docker compose up and verify health" {
+    echo "# ========================================" >&3
+    echo "# TEST: 03-hwaccel (Hardware Acceleration variant)" >&3
+    echo "# ========================================" >&3
+    
+    cd "$PROJECT_ROOT/examples/03-hwaccel"
+    echo "# Working directory: $(pwd)" >&3
+    
+    echo "# Cleaning up existing containers..." >&3
+    docker compose down || true
+    
+    echo "# Starting docker compose..." >&3
+    docker compose up -d
+    
+    echo "# Listing running containers:" >&3
+    docker compose ps >&3
+
+    CONTAINER_ID=$(docker compose ps -q seanime)
+    echo "# Container ID: $CONTAINER_ID" >&3
+    [ -n "$CONTAINER_ID" ]
+
+    echo "# Inspecting container configuration:" >&3
+    docker inspect --format='User: {{.Config.User}}' "$CONTAINER_ID" >&3
+    docker inspect --format='Image: {{.Config.Image}}' "$CONTAINER_ID" >&3
+    docker inspect --format='Devices: {{.HostConfig.Devices}}' "$CONTAINER_ID" >&3
+    docker inspect --format='GroupAdd: {{.HostConfig.GroupAdd}}' "$CONTAINER_ID" >&3
+
+    run wait_for_health "$CONTAINER_ID"
+    [ "$status" -eq 0 ]
+    
+    echo "# Tearing down..." >&3
+    docker compose down
+    echo "# ✓ Test completed successfully" >&3
+}
+
+@test "04-hwaccel-cuda: docker compose up and verify health" {
+    echo "# ========================================" >&3
+    echo "# TEST: 04-hwaccel-cuda (NVIDIA CUDA variant)" >&3
+    echo "# ========================================" >&3
+    
+    cd "$PROJECT_ROOT/examples/04-hwaccel-cuda"
+    echo "# Working directory: $(pwd)" >&3
+    
+    echo "# Cleaning up existing containers..." >&3
+    docker compose down || true
+    
+    echo "# Starting docker compose..." >&3
+    docker compose up -d
+    
+    echo "# Listing running containers:" >&3
+    docker compose ps >&3
+
+    CONTAINER_ID=$(docker compose ps -q seanime)
+    echo "# Container ID: $CONTAINER_ID" >&3
+    [ -n "$CONTAINER_ID" ]
+
+    echo "# Inspecting container configuration:" >&3
+    docker inspect --format='User: {{.Config.User}}' "$CONTAINER_ID" >&3
+    docker inspect --format='Image: {{.Config.Image}}' "$CONTAINER_ID" >&3
+    docker inspect --format='Runtime: {{.HostConfig.Runtime}}' "$CONTAINER_ID" >&3
+    docker inspect --format='GroupAdd: {{.HostConfig.GroupAdd}}' "$CONTAINER_ID" >&3
+
+    run wait_for_health "$CONTAINER_ID"
+    [ "$status" -eq 0 ]
+    
+    echo "# Tearing down..." >&3
+    docker compose down
+    echo "# ✓ Test completed successfully" >&3
 }

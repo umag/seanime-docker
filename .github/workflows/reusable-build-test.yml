@@ -1,0 +1,156 @@
+name: Reusable Build and Test
+
+on:
+  workflow_call:
+    inputs:
+      seanime_version:
+        description: 'Seanime version tag to build'
+        required: true
+        type: string
+
+jobs:
+  build_and_test:
+    name: Build and Test ${{ matrix.variant }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [default, rootless, hwaccel, cuda]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Prepare repository
+        run: |
+          chmod +x ./scripts/prepare.sh
+          ./scripts/prepare.sh ${{ inputs.seanime_version }}
+        shell: bash
+
+      - name: Get CUDA version
+        if: matrix.variant == 'cuda'
+        id: cuda_version
+        run: |
+          chmod +x ./scripts/get-cuda-version.sh
+          CUDA_TAG=$(./scripts/get-cuda-version.sh)
+          echo "CUDA_TAG=${CUDA_TAG}" >> $GITHUB_OUTPUT
+          echo "Latest NVIDIA CUDA tag: ${CUDA_TAG}"
+
+      - name: Prepare Dockerfile.cuda
+        if: matrix.variant == 'cuda'
+        run: |
+          sed -i "s/CUDA_VERSION_PLACEHOLDER/${{ steps.cuda_version.outputs.CUDA_TAG }}/g" Dockerfile.cuda
+          echo "Updated Dockerfile.cuda with version ${{ steps.cuda_version.outputs.CUDA_TAG }}"
+
+      - name: Set image tag
+        id: image_tag
+        run: |
+          if [ "${{ matrix.variant }}" = "default" ]; then
+            echo "TAG=umagistr/seanime:latest" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=umagistr/seanime:latest-${{ matrix.variant }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build test image (Default)
+        if: matrix.variant == 'default'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          platforms: linux/amd64
+          target: base
+          tags: ${{ steps.image_tag.outputs.TAG }}
+          cache-from: type=gha,scope=build-default
+          cache-to: type=gha,mode=max,scope=build-default
+
+      - name: Build test image (Rootless)
+        if: matrix.variant == 'rootless'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          platforms: linux/amd64
+          target: rootless
+          tags: ${{ steps.image_tag.outputs.TAG }}
+          cache-from: type=gha,scope=build-rootless
+          cache-to: type=gha,mode=max,scope=build-rootless
+
+      - name: Build test image (HwAccel)
+        if: matrix.variant == 'hwaccel'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          platforms: linux/amd64
+          target: hwaccel
+          tags: ${{ steps.image_tag.outputs.TAG }}
+          cache-from: type=gha,scope=build-hwaccel
+          cache-to: type=gha,mode=max,scope=build-hwaccel
+
+      - name: Build test image (CUDA)
+        if: matrix.variant == 'cuda'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile.cuda
+          load: true
+          platforms: linux/amd64
+          tags: ${{ steps.image_tag.outputs.TAG }}
+          cache-from: type=gha,scope=build-cuda
+          cache-to: type=gha,mode=max,scope=build-cuda
+
+      - name: Install test dependencies
+        run: |
+          # Install BATS
+          sudo npm install -g bats
+          
+          # Install container-structure-test
+          curl -LO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64
+          chmod +x container-structure-test-linux-amd64
+          sudo mv container-structure-test-linux-amd64 /usr/local/bin/container-structure-test
+          
+          # Ensure Goss is available
+          chmod +x ./scripts/ensure-goss.sh
+          ./scripts/ensure-goss.sh
+
+      - name: Run BATS image tests
+        run: |
+          # Run tests for the specific variant
+          if [ "${{ matrix.variant }}" = "default" ]; then
+            bats tests/images.bats --filter "latest:"
+          else
+            bats tests/images.bats --filter "latest-${{ matrix.variant }}:"
+          fi
+
+      - name: Run BATS compose tests
+        run: |
+          # Run compose tests for the specific variant
+          # Note: hwaccel and cuda compose tests temporarily disabled (require hardware)
+          if [ "${{ matrix.variant }}" = "default" ]; then
+            bats tests/compose.bats --filter "01-default"
+          elif [ "${{ matrix.variant }}" = "rootless" ]; then
+            bats tests/compose.bats --filter "02-rootless"
+          # elif [ "${{ matrix.variant }}" = "hwaccel" ]; then
+          #   bats tests/compose.bats --filter "03-hwaccel"
+          # elif [ "${{ matrix.variant }}" = "cuda" ]; then
+          #   bats tests/compose.bats --filter "04-hwaccel-cuda"
+          fi

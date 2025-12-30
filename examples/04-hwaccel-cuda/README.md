@@ -19,7 +19,13 @@ It uses the NVIDIA CUDA base image and includes FFmpeg with NVENC support.
    ```bash
    sudo chown -R 1001:1001 ./seanime-config
    ```
-3. Run `docker-compose up -d`.
+3. Ensure your user is in the `video` group on the host (if needed for GPU
+   access):
+   ```bash
+   sudo usermod -aG video $(whoami)
+   # Log out and back in, or reboot for changes to take effect
+   ```
+4. Run `docker-compose up -d`.
 
 ## Configuration
 
@@ -27,6 +33,7 @@ It uses the NVIDIA CUDA base image and includes FFmpeg with NVENC support.
 - **User**: Runs as `seanime` (UID 1001) inside the container.
 - **Image**: `umagistr/seanime:latest-cuda`
 - **GPU Access**: Configured via `runtime: nvidia` and environment variables.
+- **Groups**: Container user added to host `video` group for GPU access.
 
 ## Important
 

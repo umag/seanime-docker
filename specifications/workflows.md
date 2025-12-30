@@ -1,72 +1,139 @@
 # Workflows Specification
 
-## Existing Workflows
+## New Workflow Architecture (2025)
 
-### Publish Docker image (`publish.yml`)
+The workflow system has been redesigned to integrate testing before publishing
+and enable CI for repository changes.
 
-- **Trigger**:
+### Reusable Build and Test Workflow (`reusable-build-test.yml`)
+
+- **Type**: Reusable workflow
+- **Purpose**: Centralized build and test logic used by both CI and publish
+  workflows
+- **Inputs**:
+  - `seanime_version`: Seanime version tag to build
+- **Jobs**:
+  - `build_and_test`:
+    - **Strategy**: Matrix with variants (`default`, `rootless`, `hwaccel`,
+      `cuda`)
+    - **Parallelism**: All variants build and test in parallel
+    - **Steps**:
+      1. Checkout repository
+      2. Free disk space
+      3. Setup QEMU and Docker Buildx
+      4. Run `scripts/prepare.sh` with specified version
+      5. Get CUDA version (for CUDA variant only)
+      6. Build image for `linux/amd64` and load to Docker daemon
+      7. Save build cache to GitHub Actions Cache
+      8. Install test dependencies (BATS, container-structure-test, Goss)
+      9. Run BATS tests from `tests/images.bats` for the specific variant
+
+### CI Workflow (`ci.yml`)
+
+- **Purpose**: Test Docker builds on repository code changes
+- **Triggers**:
+  - `push` to `main`/`master` branches
+  - `pull_request` targeting `main`/`master` branches
+  - **Paths**: `scripts/**`, `examples/**`, `Dockerfile*`, `tests/**`,
+    `.github/workflows/**`
+- **Jobs**:
+  - `get_version`: Reads current version from `.version` file
+  - `test`: Calls `reusable-build-test.yml` with current version
+
+### Build, Test and Publish Workflow (`build-test-publish.yml`)
+
+- **Purpose**: Check for new Seanime releases, test, and publish if tests pass
+- **Triggers**:
   - Manual (`workflow_dispatch`)
   - Repository dispatch (`seanime_release`)
-  - Scheduled (hourly)
+  - Scheduled (hourly: `0 * * * *`)
 - **Jobs**:
-  - `check_and_build`:
-    - Checks for a new release of `5rahim/seanime`.
-    - Compares with `.version` file.
-    - If new version detected:
-      - Prepares repository.
-      - Sets up QEMU and Docker Buildx.
-      - Logs in to Docker Hub.
-      - Builds and pushes 4 variants:
-        1. **Default**: `umagistr/seanime:latest`, `umagistr/seanime:<version>`
-        2. **Rootless**: `umagistr/seanime:latest-rootless`,
-           `umagistr/seanime:<version>-rootless`
-        3. **Hardware Acceleration**: `umagistr/seanime:latest-hwaccel`,
-           `umagistr/seanime:<version>-hwaccel`
-        4. **CUDA**: `umagistr/seanime:latest-cuda`,
-           `umagistr/seanime:<version>-cuda`,
-           `umagistr/seanime:<version>-cuda-<cuda-version>`
-      - Updates `.version` file and pushes changes to git.
+  1. **`check`**:
+     - Checks for new release of `5rahim/seanime`
+     - Compares with `.version` file
+     - Gets CUDA version
+     - **Outputs**: `build_needed`, `version`, `cuda_version`
 
-### Docs (`docs.yml`)
+  2. **`test`**:
+     - **Condition**: Only if new version detected
+     - Calls `reusable-build-test.yml` with detected version
+     - Tests all 4 variants in parallel
 
-- Likely builds and deploys documentation (not analyzed in detail).
+  3. **`publish`**:
+     - **Condition**: Only if `check` found new version AND `test` passed
+     - **Strategy**: Matrix with variants (`default`, `rootless`, `hwaccel`,
+       `cuda`)
+     - **Parallelism**: All variants publish in parallel
+     - **Steps** (per variant):
+       - Setup QEMU and Docker Buildx
+       - Login to Docker Hub
+       - Prepare repository
+       - Build multi-arch images (`linux/amd64,linux/arm64,linux/arm/v7` or
+         `linux/amd64` for CUDA)
+       - Use cache from test job (`cache-from: type=gha`) to avoid rebuilding
+         tested architecture
+       - Push with proper tags:
+         - **Default**: `latest`, `<version>`
+         - **Rootless**: `latest-rootless`, `<version>-rootless`
+         - **HwAccel**: `latest-hwaccel`, `<version>-hwaccel`
+         - **CUDA**: `latest-cuda`, `<version>-cuda`,
+           `<version>-cuda-<cuda-version>`
 
-## Test Workflows
+  4. **`finalize`**:
+     - **Condition**: Only if publish succeeded
+     - Updates `.version` file
+     - Commits and pushes to git
 
-### Test Docker Images (`test.yml`)
+### Legacy Workflows
 
-- **Purpose**: Verify that the built Docker images can start and the web server
-  inside becomes responsive.
+#### Publish Docker image (`publish.yml`)
+
+- **Status**: Replaced by `build-test-publish.yml`
+- Can be disabled or removed to avoid conflicts
+
+#### Test Docker Images (`test.yml`)
+
+- **Status**: Replaced by reusable workflow integration
+- Previously ran after publish; now integrated before publish
+
+#### Test Compose Examples (`test-examples.yml`)
+
+- **Status**: Still active
+- **Purpose**: Verify Docker Compose examples are functional
 - **Trigger**:
-  - `workflow_run` (after `Publish Docker image` completes).
-  - Manual (`workflow_dispatch`).
-- **Jobs**:
-  - `test_images`:
-    - Tests images: `latest`, `latest-rootless`, `latest-hwaccel`,
-      `latest-cuda`.
-    - Runs containers using `docker run` in detached mode.
-    - Checks connectivity to port 43211.
-    - Fails if server doesn't respond within timeout.
-
-### Test Compose Examples (`test-examples.yml`)
-
-- **Purpose**: Verify that the provided Docker Compose examples are valid and
-  functional.
-- **Trigger**:
-  - `workflow_run` (after `Publish Docker image` completes).
-  - Manual (`workflow_dispatch`).
+  - `workflow_run` (after `Publish Docker image` completes)
+  - Manual (`workflow_dispatch`)
 - **Jobs**:
   - `test_examples`:
     - Matrix strategy testing:
       - `01-default`
       - `02-rootless`
       - _Note_: `03-hwaccel` and `04-hwaccel-cuda` are skipped as they require
-        specific hardware/drivers not available on standard runners.
+        specific hardware/drivers not available on standard runners
     - Steps:
-      - Checkout repository.
-      - Run `docker compose up -d` in the example directory.
-      - Wait for server to start (check port 3211).
-      - Run `docker compose down`.
+      - Checkout repository
+      - Run `docker compose up -d` in the example directory
+      - Wait for server to start (check port 3211)
+      - Run `docker compose down`
+
+#### Docs (`docs.yml`)
+
+- **Status**: Active
+- Builds and deploys documentation
+
+## Key Improvements
+
+1. **Testing Before Publishing**: Images are tested before being pushed to
+   Docker Hub
+2. **No Redundant Builds**: GitHub Actions Cache ensures the publish step reuses
+   layers from the test step
+3. **Parallelization**: All variants build/test/publish in parallel for faster
+   execution
+4. **CI Integration**: Repository changes trigger builds and tests automatically
+5. **Reusability**: Single source of truth for build/test logic via reusable
+   workflow
+6. **BATS Integration**: Uses existing BATS tests from `tests/images.bats`
+   instead of inline bash
 
 ## Local Development Scripts
 

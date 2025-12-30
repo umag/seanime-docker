@@ -4,6 +4,9 @@ services:
     container_name: seanime
     devices:
       - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - render
     ports:
       - "3211:43211"
     volumes:

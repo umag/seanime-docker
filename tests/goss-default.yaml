@@ -14,3 +14,21 @@ http:
     timeout: 5000
     allow-insecure: true
     no-follow-redirects: false
+
+file:
+  /app/seanime:
+    exists: true
+    owner: root
+    group: root
+    filetype: file
+
+package:
+  ffmpeg:
+    installed: true
+
+command:
+  ffmpeg:
+    exec: ffmpeg -version
+    exit-status: 0
+    stdout:
+      - "ffmpeg version"

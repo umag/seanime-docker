@@ -1,4 +1,7 @@
-# Inherit/Include common checks would be nice, but for simplicity/portability we define the full spec for the CUDA variant.
+# CUDA variant specific tests
+# Base image: Ubuntu + NVIDIA CUDA
+# User: seanime (UID 1001, GID 1001)
+# FFmpeg: Ubuntu repos with NVENC support
 
 port:
   tcp:43211:
@@ -17,20 +20,6 @@ http:
     allow-insecure: true
     no-follow-redirects: false
 
-file:
-  /usr/bin/ffmpeg:
-    exists: true
-    mode: "0755"
-    owner: root
-    group: root
-    filetype: file
-
-  /app/seanime:
-    exists: true
-    owner: seanime
-    group: seanime
-    filetype: file
-
 user:
   seanime:
     exists: true
@@ -40,8 +29,45 @@ user:
       - seanime
       - video
     shell: /bin/bash
+    home: /home/seanime
 
 group:
   seanime:
     exists: true
     gid: 1001
+
+file:
+  /app/seanime:
+    exists: true
+    owner: seanime
+    group: seanime
+    filetype: file
+  /usr/bin/ffmpeg:
+    exists: true
+    mode: "0755"
+    owner: root
+    group: root
+    filetype: file
+
+package:
+  ffmpeg:
+    installed: true
+  ca-certificates:
+    installed: true
+  curl:
+    installed: true
+
+command:
+  ffmpeg-version:
+    exec: ffmpeg -version
+    exit-status: 0
+    stdout:
+      - "ffmpeg version"
+  ffmpeg-hwaccels:
+    exec: ffmpeg -hwaccels
+    exit-status: 0
+    stdout:
+      - "cuda"
+  ffmpeg-nvenc:
+    exec: ffmpeg -encoders 2>&1 | grep -i nvenc
+    exit-status: 0

@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'scripts/**'
+      - 'examples/**'
+      - 'Dockerfile*'
+      - 'tests/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - 'scripts/**'
+      - 'examples/**'
+      - 'Dockerfile*'
+      - 'tests/**'
+      - '.github/workflows/**'
+
+jobs:
+  get_version:
+    name: Get Seanime Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read current version
+        id: version
+        run: |
+          VERSION=$(cat .version)
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Using Seanime version: ${VERSION}"
+
+  test:
+    name: Build and Test
+    needs: get_version
+    uses: ./.github/workflows/reusable-build-test.yml
+    with:
+      seanime_version: ${{ needs.get_version.outputs.version }}

@@ -4,6 +4,8 @@ services:
     container_name: seanime
     # Option 1: Using runtime (recommended)
     runtime: nvidia
+    group_add:
+      - video
     environment:
       - NVIDIA_VISIBLE_DEVICES=all # or '0' for first GPU
       - NVIDIA_DRIVER_CAPABILITIES=all

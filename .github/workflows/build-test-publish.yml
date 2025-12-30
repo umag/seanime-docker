@@ -1,4 +1,4 @@
-name: Publish Docker image
+name: Build, Test and Publish
 
 on:
   workflow_dispatch:
@@ -8,15 +8,14 @@ on:
     - cron: '0 * * * *'  # Run hourly to check for new releases
 
 jobs:
-  check_and_build:
-    name: Check for new release and build multiarch Docker image
+  check:
+    name: Check for new release
     runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: write
-      id-token: write
+    outputs:
+      build_needed: ${{ steps.check_build.outputs.BUILD_NEEDED }}
+      version: ${{ steps.seanime_release.outputs.LATEST_RELEASE }}
+      cuda_version: ${{ steps.cuda_version.outputs.CUDA_TAG }}
     steps:
-    
       - name: Check out the repo
         uses: actions/checkout@v4
 
@@ -38,115 +37,7 @@ jobs:
             echo "BUILD_NEEDED=false" >> $GITHUB_OUTPUT
             echo "No new version. Skipping build."
           fi
-          
-      - uses: jlumbroso/free-disk-space@main
-        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
-        with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: true  
 
-      - name: Prepare the repository
-        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
-        run: |
-          chmod +x ./scripts/prepare.sh
-          ./scripts/prepare.sh ${{ steps.seanime_release.outputs.LATEST_RELEASE }}
-        shell: bash
-
-      - name: Set up QEMU
-        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      # --- Default Variant ---
-      - name: Extract metadata (Default)
-        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
-        id: meta_default
-        uses: docker/metadata-action@v5
-        with:
-          images: umagistr/seanime
-          tags: |
-            type=raw,value=${{ steps.seanime_release.outputs.LATEST_RELEASE }}
-            type=raw,value=latest
-
-      - name: Build and push (Default)
-        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
-          target: base
-          tags: ${{ steps.meta_default.outputs.tags }}
-          labels: ${{ steps.meta_default.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # --- Rootless Variant ---
-      - name: Extract metadata (Rootless)
-        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
-        id: meta_rootless
-        uses: docker/metadata-action@v5
-        with:
-          images: umagistr/seanime
-          tags: |
-            type=raw,value=${{ steps.seanime_release.outputs.LATEST_RELEASE }}-rootless
-            type=raw,value=latest-rootless
-
-      - name: Build and push (Rootless)
-        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
-          target: rootless
-          tags: ${{ steps.meta_rootless.outputs.tags }}
-          labels: ${{ steps.meta_rootless.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # --- Hardware Acceleration Variant ---
-      - name: Extract metadata (HwAccel)
-        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
-        id: meta_hwaccel
-        uses: docker/metadata-action@v5
-        with:
-          images: umagistr/seanime
-          tags: |
-            type=raw,value=${{ steps.seanime_release.outputs.LATEST_RELEASE }}-hwaccel
-            type=raw,value=latest-hwaccel
-
-      - name: Build and push (HwAccel)
-        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
-          target: hwaccel
-          tags: ${{ steps.meta_hwaccel.outputs.tags }}
-          labels: ${{ steps.meta_hwaccel.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # --- CUDA Variant ---
       - name: Get latest CUDA version
         if: steps.check_build.outputs.BUILD_NEEDED == 'true'
         id: cuda_version
@@ -156,25 +47,141 @@ jobs:
           echo "CUDA_TAG=${CUDA_TAG}" >> $GITHUB_OUTPUT
           echo "Latest NVIDIA CUDA tag: ${CUDA_TAG}"
 
+  test:
+    name: Build and Test
+    needs: check
+    if: needs.check.outputs.build_needed == 'true'
+    uses: ./.github/workflows/reusable-build-test.yml
+    with:
+      seanime_version: ${{ needs.check.outputs.version }}
+
+  publish:
+    name: Publish ${{ matrix.variant }}
+    needs: [check, test]
+    if: needs.check.outputs.build_needed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: write
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [default, rootless, hwaccel, cuda]
+    
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Prepare repository
+        run: |
+          chmod +x ./scripts/prepare.sh
+          ./scripts/prepare.sh ${{ needs.check.outputs.version }}
+        shell: bash
+
+      - name: Prepare Dockerfile.cuda
+        if: matrix.variant == 'cuda'
+        run: |
+          sed -i "s/CUDA_VERSION_PLACEHOLDER/${{ needs.check.outputs.cuda_version }}/g" Dockerfile.cuda
+          echo "Updated Dockerfile.cuda with version ${{ needs.check.outputs.cuda_version }}"
+
+      - name: Extract metadata (Default)
+        if: matrix.variant == 'default'
+        id: meta_default
+        uses: docker/metadata-action@v5
+        with:
+          images: umagistr/seanime
+          tags: |
+            type=raw,value=${{ needs.check.outputs.version }}
+            type=raw,value=latest
+
+      - name: Build and push (Default)
+        if: matrix.variant == 'default'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          target: base
+          tags: ${{ steps.meta_default.outputs.tags }}
+          labels: ${{ steps.meta_default.outputs.labels }}
+          cache-from: type=gha,scope=build-default
+          cache-to: type=gha,mode=max,scope=build-default
+
+      - name: Extract metadata (Rootless)
+        if: matrix.variant == 'rootless'
+        id: meta_rootless
+        uses: docker/metadata-action@v5
+        with:
+          images: umagistr/seanime
+          tags: |
+            type=raw,value=${{ needs.check.outputs.version }}-rootless
+            type=raw,value=latest-rootless
+
+      - name: Build and push (Rootless)
+        if: matrix.variant == 'rootless'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          target: rootless
+          tags: ${{ steps.meta_rootless.outputs.tags }}
+          labels: ${{ steps.meta_rootless.outputs.labels }}
+          cache-from: type=gha,scope=build-rootless
+          cache-to: type=gha,mode=max,scope=build-rootless
+
+      - name: Extract metadata (HwAccel)
+        if: matrix.variant == 'hwaccel'
+        id: meta_hwaccel
+        uses: docker/metadata-action@v5
+        with:
+          images: umagistr/seanime
+          tags: |
+            type=raw,value=${{ needs.check.outputs.version }}-hwaccel
+            type=raw,value=latest-hwaccel
+
+      - name: Build and push (HwAccel)
+        if: matrix.variant == 'hwaccel'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          target: hwaccel
+          tags: ${{ steps.meta_hwaccel.outputs.tags }}
+          labels: ${{ steps.meta_hwaccel.outputs.labels }}
+          cache-from: type=gha,scope=build-hwaccel
+          cache-to: type=gha,mode=max,scope=build-hwaccel
+
       - name: Extract metadata (CUDA)
-        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
+        if: matrix.variant == 'cuda'
         id: meta_cuda
         uses: docker/metadata-action@v5
         with:
           images: umagistr/seanime
           tags: |
-            type=raw,value=${{ steps.seanime_release.outputs.LATEST_RELEASE }}-cuda
-            type=raw,value=${{ steps.seanime_release.outputs.LATEST_RELEASE }}-cuda-${{ steps.cuda_version.outputs.CUDA_TAG }}
+            type=raw,value=${{ needs.check.outputs.version }}-cuda
+            type=raw,value=${{ needs.check.outputs.version }}-cuda-${{ needs.check.outputs.cuda_version }}
             type=raw,value=latest-cuda
 
-      - name: Prepare Dockerfile.cuda
-        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
-        run: |
-          sed -i "s/CUDA_VERSION_PLACEHOLDER/${{ steps.cuda_version.outputs.CUDA_TAG }}/g" Dockerfile.cuda
-          echo "Updated Dockerfile.cuda with version ${{ steps.cuda_version.outputs.CUDA_TAG }}"
-
       - name: Build and push (CUDA)
-        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
+        if: matrix.variant == 'cuda'
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -183,15 +190,25 @@ jobs:
           platforms: linux/amd64
           tags: ${{ steps.meta_cuda.outputs.tags }}
           labels: ${{ steps.meta_cuda.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=build-cuda
+          cache-to: type=gha,mode=max,scope=build-cuda
+
+  finalize:
+    name: Update version file
+    needs: [check, publish]
+    if: needs.check.outputs.build_needed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
 
       - name: Update version file
-        if: steps.check_build.outputs.BUILD_NEEDED == 'true'
         run: |
-          echo "${{ steps.seanime_release.outputs.LATEST_RELEASE }}" > .version
+          echo "${{ needs.check.outputs.version }}" > .version
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .version
-          git commit -m "Update to seanime version ${{ steps.seanime_release.outputs.LATEST_RELEASE }}"
+          git commit -m "Update to seanime version ${{ needs.check.outputs.version }}"
           git push
