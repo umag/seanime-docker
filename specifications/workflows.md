@@ -26,6 +26,10 @@ and enable CI for repository changes.
       6. Build image for `linux/amd64` and load to Docker daemon
       7. Save build cache to GitHub Actions Cache
       8. Install test dependencies (BATS, container-structure-test, Goss)
+         - BATS installed via npm
+         - container-structure-test downloaded from Google Cloud Storage
+         - Goss binary downloaded automatically by `scripts/ensure-goss.sh` when
+           not present
       9. Run BATS tests from `tests/images.bats` for the specific variant
 
 ### CI Workflow (`ci.yml`)
