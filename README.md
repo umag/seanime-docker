@@ -1,9 +1,16 @@
 # Seanime Docker
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/umagistr/seanime.svg)](https://hub.docker.com/r/umagistr/seanime)
-[![Publish Docker image](https://github.com/umag/seanime-docker/actions/workflows/publish.yml/badge.svg)](https://github.com/umag/seanime-docker/actions/workflows/publish.yml)
+[![Build, Test & Publish](https://github.com/umag/seanime-docker/actions/workflows/build-test-publish.yml/badge.svg)](https://github.com/umag/seanime-docker/actions/workflows/build-test-publish.yml)
+[![CI](https://github.com/umag/seanime-docker/actions/workflows/ci.yml/badge.svg)](https://github.com/umag/seanime-docker/actions/workflows/ci.yml)
 
 A simple, multi-arch Docker image for [Seanime](https://seanime.rahim.app/).
+
+> **Note**: Hardware acceleration variants (hwaccel and CUDA) are built and
+> published automatically, but cannot be fully tested during the build process
+> due to the lack of specific hardware (Intel QSV/VAAPI or NVIDIA GPUs) on
+> GitHub Actions runners. While basic image structure and functionality are
+> verified, hardware-specific features should be tested in your own environment.
 
 ## Image Variants
 
