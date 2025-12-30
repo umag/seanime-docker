@@ -79,6 +79,11 @@ wait_for_health() {
     echo "# Cleaning up existing containers..." >&3
     docker compose down || true
     
+    echo "# Creating and setting permissions for volume directories..." >&3
+    mkdir -p ./seanime-config ./anime ./downloads
+    sudo chown -R 1000:1000 ./seanime-config ./anime ./downloads
+    echo "# Set ownership to 1000:1000 for rootless user" >&3
+    
     echo "# Starting docker compose..." >&3
     docker compose up -d
     
@@ -111,6 +116,11 @@ wait_for_health() {
     
     echo "# Cleaning up existing containers..." >&3
     docker compose down || true
+    
+    echo "# Creating and setting permissions for volume directories..." >&3
+    mkdir -p ./seanime-config ./anime ./downloads
+    sudo chown -R 1000:1000 ./seanime-config ./anime ./downloads
+    echo "# Set ownership to 1000:1000 for hwaccel user" >&3
     
     echo "# Starting docker compose..." >&3
     docker compose up -d
@@ -146,6 +156,11 @@ wait_for_health() {
     
     echo "# Cleaning up existing containers..." >&3
     docker compose down || true
+    
+    echo "# Creating and setting permissions for volume directories..." >&3
+    mkdir -p ./seanime-config ./anime ./downloads
+    sudo chown -R 1001:1001 ./seanime-config ./anime ./downloads
+    echo "# Set ownership to 1001:1001 for cuda user" >&3
     
     echo "# Starting docker compose..." >&3
     docker compose up -d

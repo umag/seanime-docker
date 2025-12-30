@@ -157,16 +157,16 @@ None required for basic operation.
 
 ```yaml
 services:
-    seanime:
-        image: umagistr/seanime:latest-rootless
-        container_name: seanime
-        ports:
-            - "3211:43211"
-        volumes:
-            - ./seanime-config:/home/seanime/.config/Seanime
-            - ./anime:/anime
-            - ./downloads:/downloads
-        restart: unless-stopped
+  seanime:
+    image: umagistr/seanime:latest-rootless
+    container_name: seanime
+    ports:
+      - "3211:43211"
+    volumes:
+      - ./seanime-config:/home/seanime/.config/Seanime
+      - ./anime:/anime
+      - ./downloads:/downloads
+    restart: unless-stopped
 ```
 
 ### Docker Run
@@ -230,6 +230,21 @@ sudo chown -R 1000:1000 ./seanime-config ./anime ./downloads
 
 Ensure the host directories exist and have correct permissions before starting
 the container.
+
+### CI/CD Testing on GitHub Actions
+
+When testing on GitHub Actions or other CI/CD environments where Docker runs
+with elevated privileges, volume directories must have correct ownership set
+before container startup:
+
+```bash
+# Create and set permissions before docker compose up
+mkdir -p ./seanime-config ./anime ./downloads
+sudo chown -R 1000:1000 ./seanime-config ./anime ./downloads
+```
+
+This prevents the "permission denied" error that occurs when Docker creates
+directories as root but the container runs as UID 1000.
 
 ## Related Variants
 
