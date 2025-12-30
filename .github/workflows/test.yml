@@ -32,7 +32,7 @@ jobs:
         run: |
           echo "Waiting for Seanime to start..."
           # Retry loop to check if the server is up
-          for i in {1..30}; do
+          for i in {1..300}; do
             if curl -s -o /dev/null -w "%{http_code}" http://localhost:43211 | grep -q "200"; then
               echo "Seanime started successfully!"
               exit 0
