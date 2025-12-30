@@ -1,0 +1,64 @@
+2025-12-30 11:42:58 |INF| app > Seanime 3.2.4-Arashi
+2025-12-30 11:42:58 |INF| app > OS: linux
+2025-12-30 11:42:58 |INF| app > Arch: amd64
+2025-12-30 11:42:58 |INF| app > Processor count: 8
+2025-12-30 11:42:58 |DBG| app > Initializing config
+2025-12-30 11:42:58 |INF| app > Data directory: /root/.config/Seanime
+2025-12-30 11:42:58 |INF| app > Working directory: /app
+2025-12-30 11:42:59 |INF| db > Database instantiated name=seanime.db
+2025-12-30 11:42:59 |DBG| database > Starting cleanup operations
+2025-12-30 11:42:59 |DBG| database > Cleanup operations completed
+2025-12-30 11:42:59 |DBG| custom source > Manager created, loading extensions id=33076382-6ed9-4d84-96de-f4521fe08312
+2025-12-30 11:42:59 |DBG| custom source > Manager created, loading extensions id=2619fc86-b64e-4a45-a571-ec83fe1e7467
+2025-12-30 11:42:59 |INF| local platform > Database instantiated name=local.db
+2025-12-30 11:42:59 |DBG| custom source > Manager created, loading extensions id=492de72a-3a0a-49ba-8766-13e6edb4ac6f
+2025-12-30 11:42:59 |WRN| app > Anilist client is not authenticated, using simulated platform
+2025-12-30 11:42:59 |DBG| app > Checking for version migrations
+2025-12-30 11:42:59 |INF| continuity > Initialized manager
+2025-12-30 11:42:59 |DBG| app > Refreshing modules
+2025-12-30 11:42:59 |DBG| manga downloader > Reading download directory
+2025-12-30 11:42:59 |TRC| ws > Sending message type=refreshed-manga-download-data
+2025-12-30 11:42:59 |WRN| app > Did not initialize media player module, no settings found
+2025-12-30 11:42:59 |WRN| app > Did not initialize torrent client module, no settings found
+2025-12-30 11:42:59 |INF| app > Refreshed modules
+2025-12-30 11:42:59 |TRC| extensions > Loading external extensions
+2025-12-30 11:42:59 |TRC| extensions > Interrupting Goja VMs
+2025-12-30 11:42:59 |DBG| extensions > Killed Goja VMs count=0
+2025-12-30 11:42:59 |TRC| extensions > Unloading external extensions
+2025-12-30 11:42:59 |DBG| extensions > Unloaded external extensions count=0
+2025-12-30 11:42:59 |DBG| extensions > Loaded external extensions
+2025-12-30 11:42:59 |TRC| ws > Sending message type=extensions-reloaded
+2025-12-30 11:42:59 |DBG| app > Fetching Anilist data
+2025-12-30 11:42:59 |TRC| extensions > Checking for updates
+2025-12-30 11:42:59 |DBG| extensions > Retrieved update info haveUpdates=0
+2025-12-30 11:42:59 |INF| app > Authenticated to AniList
+2025-12-30 11:42:59 |INF| app > Fetched Anilist data
+2025-12-30 11:42:59 |TRC| simulated platform > Refreshing anime collection
+2025-12-30 11:42:59 |TRC| local manager > Saving simulated anime collection to database
+2025-12-30 11:42:59 |DBG| extensions > Loaded built-in manga provider extension id=local-manga
+2025-12-30 11:42:59 |DBG| extensions > Loaded built-in extension id=local-manga
+2025-12-30 11:42:59 |TRC| ws > Sending message type=extensions-reloaded
+2025-12-30 11:42:59 |TRC| extensions > Loading external extensions
+2025-12-30 11:42:59 |TRC| extensions > Interrupting Goja VMs
+2025-12-30 11:42:59 |DBG| extensions > Killed Goja VMs count=0
+2025-12-30 11:42:59 |TRC| extensions > Unloading external extensions
+2025-12-30 11:42:59 |DBG| extensions > Unloaded external extensions count=0
+2025-12-30 11:42:59 |DBG| extensions > Loaded external extensions
+2025-12-30 11:42:59 |TRC| ws > Sending message type=extensions-reloaded
+2025-12-30 11:42:59 |TRC| ws > Sending message type=check-for-announcements
+2025-12-30 11:42:59 |DBG| db > Media streaming settings saved
+2025-12-30 11:42:59 |INF| mediastream > Module initialized
+2025-12-30 11:42:59 |TRC| ws > Sending message type=refreshed-anilist-anime-collection
+2025-12-30 11:42:59 |TRC| ws > Sending message type=server-ready
+2025-12-30 11:42:59 |TRC| simulated platform > Refreshing manga collection
+2025-12-30 11:42:59 |TRC| local manager > Saving simulated manga collection to database
+2025-12-30 11:42:59 |DBG| db > Torrent streaming settings saved
+2025-12-30 11:42:59 |INF| torrentstream > Module is disabled
+2025-12-30 11:42:59 |DBG| torrentstream > Shutting down module
+2025-12-30 11:42:59 |TRC| ws > Sending message type=refreshed-anilist-manga-collection
+2025-12-30 11:42:59 |DBG| db > Debrid settings saved
+2025-12-30 11:42:59 |INF| app > Seanime started at http://127.0.0.1:43211
+2025-12-30 11:52:59 |TRC| ws > Sending message type=check-for-announcements
+2025-12-30 12:02:58 |TRC| ws > Sending message type=check-for-announcements
+2025-12-30 12:12:58 |TRC| ws > Sending message type=check-for-announcements
+2025-12-30 12:22:58 |TRC| ws > Sending message type=check-for-announcements

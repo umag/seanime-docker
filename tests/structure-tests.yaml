@@ -3,7 +3,7 @@ schemaVersion: "2.0.0"
 # Metadata Verification
 metadataTest:
   exposedPorts: ["43211"]
-  entrypoint: ["/app/seanime"]
+  cmd: ["/app/seanime"]
   workdir: "/app"
   # User differs between variants (root vs 1000 vs 1001), so checking user might require per-variant configs.
   # For now we skip specific user check or assume a specific variant.

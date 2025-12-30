@@ -122,35 +122,20 @@ manage development dependencies.
 
 ### Running Tests
 
-#### 1. Container Structure Tests (Static)
+We use **BATS** to orchestrate all tests.
 
-Verify the image content:
+#### 1. Image Verification (Structure & Goss)
 
-```bash
-container-structure-test test --image umagistr/seanime:latest --config tests/structure-tests.yaml
-```
-
-#### 2. Goss Tests (Runtime)
-
-Verify the running container state:
+This suite pulls all image variants and runs both Container Structure Tests and
+Goss tests against them.
 
 ```bash
-# Requires dgoss wrapper or similar
-dgoss run umagistr/seanime:latest
+bats tests/images.bats
 ```
 
-_Note: You might need to set `GOSS_FILE=tests/goss.yaml` depending on how you
-invoke it._
+#### 2. Docker Compose Integration
 
-For the **CUDA** variant, use the specific configuration:
-
-```bash
-GOSS_FILE=tests/goss-cuda.yaml dgoss run umagistr/seanime:latest-cuda
-```
-
-#### 3. BATS (Integration)
-
-Verify Docker Compose examples:
+This suite verifies the example Compose configurations.
 
 ```bash
 bats tests/compose.bats

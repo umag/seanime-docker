@@ -78,7 +78,7 @@ FROM common-base AS rootless
 
 # Create user
 RUN addgroup -S seanime -g 1000 && \
-    adduser -S seanime -G seanime -u 1000
+    adduser -S seanime -G seanime -u 1000 -s /sbin/nologin
 
 # Install standard ffmpeg
 RUN apk add --no-cache ffmpeg
@@ -99,11 +99,10 @@ CMD ["/app/seanime"]
 FROM common-base AS hwaccel
 ARG TARGETARCH
 
-# Create user and add to video/render groups
+# Create user and add to video groups
 RUN addgroup -S seanime -g 1000 && \
     adduser -S seanime -G seanime -u 1000 && \
     addgroup seanime video || true && \
-    addgroup seanime render || true
 
 # Install Jellyfin FFmpeg and Intel drivers (amd64 only)
 RUN sed -i -e 's/^#\s*\(.*\/\)community/\1community/' /etc/apk/repositories && \

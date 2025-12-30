@@ -14,3 +14,17 @@ http:
     timeout: 5000
     allow-insecure: true
     no-follow-redirects: false
+
+user:
+  seanime:
+    exists: true
+    uid: 1000
+    gid: 1000
+    groups:
+      - seanime
+    shell: /sbin/nologin
+
+group:
+  seanime:
+    exists: true
+    gid: 1000

@@ -67,3 +67,21 @@
       - Run `docker compose up -d` in the example directory.
       - Wait for server to start (check port 3211).
       - Run `docker compose down`.
+
+## Local Development Scripts
+
+### Build Local Images (`scripts/build_local.sh`)
+
+- **Purpose**: Run the prepare steps and build all Docker images locally for
+  development and testing.
+- **Usage**: `./scripts/build_local.sh [optional_tag]`
+- **Steps**:
+  - Fetches the latest release tag from `5rahim/seanime` (or uses provided tag).
+  - Runs `scripts/prepare.sh`.
+  - Builds `umagistr/seanime:latest`.
+  - Builds `umagistr/seanime:latest-rootless`.
+  - Builds `umagistr/seanime:latest-hwaccel`.
+  - Fetches latest CUDA version using `scripts/get-cuda-version.sh`.
+  - Updates `Dockerfile.cuda` temporarily.
+  - Builds `umagistr/seanime:latest-cuda`.
+  - Restores original `Dockerfile.cuda`.
