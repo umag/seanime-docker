@@ -31,18 +31,28 @@ jobs:
           echo "Waiting for Seanime to start..."
           # Retry loop to check if the server is up
           for i in {1..300}; do
+            # Check if container is running
+            if ! docker compose ps --services --filter "status=running" | grep -q "seanime"; then
+              echo "Container is not running!"
+              docker compose logs
+              exit 1
+            fi
+
             # Check if port 3211 is reachable (examples map 3211:43211)
-            if curl -s -o /dev/null -w "%{http_code}" http://localhost:3211 | grep -q "200"; then
+            # Use 127.0.0.1 to avoid IPv6 issues
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3211)
+            if [ "$HTTP_CODE" -eq 200 ]; then
               echo "Seanime started successfully!"
               exit 0
             fi
-            # Also check for other success codes or just connection
-            if curl -s http://localhost:3211 > /dev/null; then
-               echo "Seanime server is reachable!"
+            
+            # Also check for other success codes (e.g., 302 Redirect)
+            if [ "$HTTP_CODE" -eq 301 ] || [ "$HTTP_CODE" -eq 302 ] || [ "$HTTP_CODE" -eq 401 ]; then
+               echo "Seanime server is reachable (HTTP $HTTP_CODE)!"
                exit 0
             fi
             
-            echo "Attempt $i: Server not ready yet..."
+            echo "Attempt $i: Server not ready yet (HTTP $HTTP_CODE)..."
             sleep 2
           done
           echo "Timed out waiting for Seanime to start."
