@@ -63,7 +63,7 @@ FROM common-base AS base
 RUN apk add --no-cache ffmpeg
 
 # Copy binary
-COPY --from=go-builder /tmp/build/seanime /app/seanime
+COPY --from=go-builder /tmp/build/seanime /app/
 
 WORKDIR /app
 EXPOSE 43211
@@ -81,7 +81,7 @@ RUN addgroup -S seanime -g 1000 && \
 RUN apk add --no-cache ffmpeg
 
 # Copy binary with ownership
-COPY --from=go-builder --chown=1000:1000 /tmp/build/seanime /app/seanime
+COPY --from=go-builder --chown=1000:1000 /tmp/build/seanime /app/
 
 USER 1000
 WORKDIR /app
@@ -111,7 +111,7 @@ RUN sed -i -e 's/^#\s*\(.*\/\)community/\1community/' /etc/apk/repositories && \
     ln -s /usr/lib/jellyfin-ffprobe /usr/bin/ffprobe
 
 # Copy binary with ownership
-COPY --from=go-builder --chown=1000:1000 /tmp/build/seanime /app/seanime
+COPY --from=go-builder --chown=1000:1000 /tmp/build/seanime /app/
 
 USER 1000
 WORKDIR /app
