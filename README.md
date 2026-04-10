@@ -75,6 +75,57 @@ Check the [examples](./examples) directory for complete configurations:
 - `/anime` - Media library (mount your anime directory here).
 - `/downloads` - Downloads directory.
 
+## Custom User/Group ID
+
+The rootless, hwaccel, and CUDA variants run as a non-root user with a
+default UID:GID (1000:1000 for rootless/hwaccel, 1001:1001 for CUDA). If your
+media library uses different ownership, you can override this using Docker's
+native `user` option — no rebuild required.
+
+> Unlike LinuxServer.io images, seanime uses Docker's built-in `user:` flag
+> rather than PUID/PGID environment variables. Same result, no extra overhead.
+
+### Docker Compose
+
+```yaml
+services:
+  seanime:
+    image: umagistr/seanime:latest-rootless
+    user: "1000:1500"  # <-- your UID:GID here
+    volumes:
+      - ./seanime-config:/home/seanime/.config/Seanime
+      - ./anime:/anime
+      - ./downloads:/downloads
+    ports:
+      - 3211:43211
+```
+
+### Docker Run
+
+```bash
+docker run -d \
+  --name seanime \
+  --user 1000:1500 \
+  -p 3211:43211 \
+  -v ./seanime-config:/home/seanime/.config/Seanime \
+  -v ./anime:/anime \
+  -v ./downloads:/downloads \
+  umagistr/seanime:latest-rootless
+```
+
+### Important Notes
+
+- **Pre-chown volumes** to match your chosen UID:GID:
+  ```bash
+  sudo chown -R 1000:1500 ./seanime-config
+  ```
+- **Config path** remains `/home/seanime/.config/Seanime` regardless of the
+  UID you set — this is baked into the image.
+- Works with all non-root variants: `latest-rootless`, `latest-hwaccel`, and
+  `latest-cuda`.
+- The **default** (root) variant already runs as root, so `user:` is not
+  typically needed.
+
 ## Hardware Acceleration
 
 ### Intel QSV/VAAPI

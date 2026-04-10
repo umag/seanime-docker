@@ -2,6 +2,7 @@ services:
   seanime:
     image: umagistr/seanime:latest-cuda
     container_name: seanime
+    # user: "1001:1500"  # Optional: override UID:GID (default is 1001:1001)
     # Option 1: Using runtime (recommended)
     runtime: nvidia
     group_add:

@@ -35,6 +35,21 @@ It uses the NVIDIA CUDA base image and includes FFmpeg with NVENC support.
 - **GPU Access**: Configured via `runtime: nvidia` and environment variables.
 - **Groups**: Container user added to host `video` group for GPU access.
 
+## Custom UID/GID
+
+If your media library uses different ownership, set the `user` field in
+docker-compose.yml. Note the CUDA variant defaults to UID **1001** (not 1000):
+
+```yaml
+user: "1001:1500"
+```
+
+Then chown your volumes to match:
+
+```bash
+sudo chown -R 1001:1500 ./seanime-config
+```
+
 ## Important
 
 - This variant is **amd64 only** (x86_64).
