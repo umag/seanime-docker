@@ -106,6 +106,24 @@ Default mount points (from examples):
 
 None required for basic operation.
 
+### Custom UID/GID
+
+To run as a different UID:GID than the default 1000:1000, use Docker's native
+`user` option:
+
+```yaml
+# docker-compose.yml
+user: "1000:1500"
+```
+
+```bash
+# docker run
+docker run --user 1000:1500 ...
+```
+
+Pre-chown volumes to match: `sudo chown -R 1000:1500 ./seanime-config`.
+The config path remains `/home/seanime/.config/Seanime` regardless of UID.
+
 ### Entrypoint/Command
 
 - **USER**: `1000`

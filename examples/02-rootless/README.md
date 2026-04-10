@@ -19,6 +19,21 @@ This setup runs Seanime as a non-root user (UID 1000) for improved security.
 - **User**: Runs as `seanime` (UID 1000) inside the container.
 - **Image**: `umagistr/seanime:latest-rootless`
 
+## Custom UID/GID
+
+If your media library uses different ownership (e.g. 1000:1500), set the
+`user` field in docker-compose.yml:
+
+```yaml
+user: "1000:1500"
+```
+
+Then chown your volumes to match:
+
+```bash
+sudo chown -R 1000:1500 ./seanime-config
+```
+
 ## Important
 
 If migrating from the default root-based image, you must update your volume

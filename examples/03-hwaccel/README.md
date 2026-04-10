@@ -34,6 +34,24 @@ uses the rootless variant as a base.
 - **Groups**: Container user added to host `video` and `render` groups for GPU
   access.
 
+## Custom UID/GID
+
+If your media library uses different ownership, set the `user` field in
+docker-compose.yml:
+
+```yaml
+user: "1000:1500"
+```
+
+Then chown your volumes to match:
+
+```bash
+sudo chown -R 1000:1500 ./seanime-config
+```
+
+The `group_add` directive for `video` and `render` continues to work alongside
+`user:` — it uses host group IDs which are unaffected by the UID:GID override.
+
 ## Important
 
 - This variant is **amd64 only** for hardware acceleration features.

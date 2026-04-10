@@ -95,6 +95,11 @@ Default mount points (from examples):
 
 None required for basic operation.
 
+### Custom UID/GID
+
+The default variant runs as root. For custom UID:GID support, use the
+rootless, hwaccel, or CUDA variants with Docker's `user:` option instead.
+
 ### Entrypoint/Command
 
 - **CMD**: `["/app/seanime"]`
