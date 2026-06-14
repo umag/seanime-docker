@@ -4,13 +4,13 @@
 [![Build, Test & Publish](https://github.com/umag/seanime-docker/actions/workflows/build-test-publish.yml/badge.svg)](https://github.com/umag/seanime-docker/actions/workflows/build-test-publish.yml)
 [![CI](https://github.com/umag/seanime-docker/actions/workflows/ci.yml/badge.svg)](https://github.com/umag/seanime-docker/actions/workflows/ci.yml)
 [![Sponsor](https://img.shields.io/github/sponsors/umag?label=Sponsor&logo=GitHub&color=ea4aaa)](https://github.com/sponsors/umag)
-[![Patreon](https://img.shields.io/badge/Patreon-Support-f96854?logo=patreon&logoColor=white)](https://www.patreon.com/_Magistr_)
+[![Patreon](https://img.shields.io/badge/Patreon-Support-f96854?logo=patreon&logoColor=white)](https://www.patreon.com/_Magistr_/posts/seanime-docker-161071808)
 
 A simple, multi-arch Docker image for [Seanime](https://seanime.rahim.app/).
 
 If this image is useful to you, please consider supporting its maintenance via
 [**❤️ GitHub Sponsors**](https://github.com/sponsors/umag) or
-[**Patreon**](https://www.patreon.com/_Magistr_).
+[**Patreon**](https://www.patreon.com/_Magistr_/posts/seanime-docker-161071808).
 
 > **Note**: Hardware acceleration variants (hwaccel and CUDA) are built and
 > published automatically, but cannot be fully tested during the build process
