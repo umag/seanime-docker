@@ -13,7 +13,6 @@ scripts/goss-linux-*
 /test/
 /.gitmodules
 /.golangci.yml
-/.github/FUNDING.yml
 /.github/ISSUE_TEMPLATE/
 /.github/scripts/
 /.github/workflows/electron-build.yml
