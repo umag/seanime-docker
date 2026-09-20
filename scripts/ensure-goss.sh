@@ -3,6 +3,24 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Pin the Goss version. As of v0.4.x the release assets are tarballs
+# (goss_<ver>_linux_x86_64.tar.gz), not the old raw goss-linux-amd64 binary,
+# so the ".../latest/download/goss-linux-amd64" URL now 404s.
+GOSS_VERSION="v0.4.10"
+GOSS_TARBALL="goss_${GOSS_VERSION#v}_linux_x86_64.tar.gz"
+GOSS_URL="https://github.com/goss-org/goss/releases/download/${GOSS_VERSION}/${GOSS_TARBALL}"
+
+# Download the pinned Goss release and extract the linux/amd64 binary.
+# curl -f makes an HTTP error fail loudly instead of saving an error page
+# as the "binary" (which would later run as a script and exit 127).
+download_goss() {
+    local dest="$1"
+    echo "Downloading Goss ${GOSS_VERSION} (linux/amd64)..."
+    curl -fL "$GOSS_URL" | tar -xzO goss > "$dest"
+    chmod +x "$dest"
+    echo "Downloaded Goss binary: $dest"
+}
+
 # Ensure dgoss is executable
 chmod +x "$SCRIPT_DIR/dgoss"
 
@@ -21,10 +39,8 @@ if [ "$OS" == "Linux" ]; then
             echo "Using cached Goss binary: $GOSS_BINARY"
         else
             echo "Goss not found. Downloading Linux version of Goss..."
-            curl -L https://github.com/goss-org/goss/releases/latest/download/goss-linux-amd64 -o "$SCRIPT_DIR/goss-linux-amd64"
-            chmod +x "$SCRIPT_DIR/goss-linux-amd64"
+            download_goss "$SCRIPT_DIR/goss-linux-amd64"
             GOSS_BINARY="$SCRIPT_DIR/goss-linux-amd64"
-            echo "Downloaded Goss binary: $GOSS_BINARY"
         fi
     fi
 elif [ "$OS" == "Darwin" ]; then
@@ -33,10 +49,8 @@ elif [ "$OS" == "Darwin" ]; then
         echo "Using cached Goss binary: $GOSS_BINARY"
     else
         echo "Detected macOS. Downloading Linux version of Goss for container compatibility..."
-        curl -L https://github.com/goss-org/goss/releases/latest/download/goss-linux-amd64 -o "$SCRIPT_DIR/goss-linux-amd64"
-        chmod +x "$SCRIPT_DIR/goss-linux-amd64"
+        download_goss "$SCRIPT_DIR/goss-linux-amd64"
         GOSS_BINARY="$SCRIPT_DIR/goss-linux-amd64"
-        echo "Downloaded Goss binary: $GOSS_BINARY"
     fi
 fi
 
